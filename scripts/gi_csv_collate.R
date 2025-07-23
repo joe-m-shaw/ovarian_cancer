@@ -17,7 +17,7 @@ all_worksheets <- dna_db_worksheets |>
 stopifnot(nrow(all_worksheets) > 0)
 
 gi_ws_info <- all_worksheets |> 
-  filter(grepl(pattern = "seqone|seq\\sone|seq_one",
+  filter(grepl(pattern = "seqone|seq\\sone|seq_one|SSXT\\ssWGS\\sHRD",
                x = description,
                ignore.case = TRUE))
 
