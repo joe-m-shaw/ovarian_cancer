@@ -70,22 +70,24 @@ validation_worksheets <- c(DOC6192_validation_worksheets,
                            DOC6588_validation_worksheets)
 
 gi_csv_collated_validation_info <- gi_csv_collated_patient_info |> 
-  mutate(sample_status = case_when(
+  mutate(service_validation = case_when(
     worksheet %in% validation_worksheets ~"validation",
     # 2 validation samples were on WS138061. The other samples on this
     # worksheet were live clinical samples
     (worksheet == "WS138061" & labno %in% c("23047082", "23053359")) ~"validation",
-    TRUE ~"live_service"
+    TRUE ~"service"
   ),
-  source = case_when(
+  patient_non_patient = case_when(
     surname %in% c("Seraseq", "GenQA") ~"non-patient",
     TRUE ~"patient"
   ))
 
-# Remove patient duplicates -----------------------------------------------
+# Remove duplicates -------------------------------------------------------
 
 gi_csv_cleaned_orpp <- gi_csv_collated_validation_info |> 
-  filter(!is.na(nhsno)) |> 
+  filter(!is.na(nhsno) &
+           service_validation == "service" &
+           patient_non_patient == "patient") |> 
   # Some patient have multiple samples. To select samples with conclusive 
   # results (positive or negative statuses), arrange by NHS number and 
   # status and then
@@ -93,8 +95,16 @@ gi_csv_cleaned_orpp <- gi_csv_collated_validation_info |>
   arrange(nhsno, status) |> 
   filter(!duplicated(nhsno))
 
+stopifnot(unique(gi_csv_cleaned_orpp$patient_non_patient) == "patient")
+stopifnot(unique(gi_csv_cleaned_orpp$service_validation) == "service")
 stopifnot(anyDuplicated(gi_csv_cleaned_orpp$labno) == 0)
 stopifnot(anyDuplicated(gi_csv_cleaned_orpp$nhsno) == 0)
+
+gi_csv_cleaned_orps <- gi_csv_collated_validation_info |> 
+  filter(service_validation == "service" &
+           patient_non_patient == "patient") |> 
+  arrange(labno, status) |> 
+  filter(!duplicated(labno))
 
 # Export cleaned data -----------------------------------------------------
 
@@ -102,3 +112,8 @@ write_csv(gi_csv_cleaned_orpp,
           paste0(config::get("data_folderpath"),
                  "02_cleaned/",
                  "gi_csv_cleaned_orpp.csv"))
+
+write_csv(gi_csv_cleaned_orps,
+          paste0(config::get("data_folderpath"),
+                 "02_cleaned/",
+                 "gi_csv_cleaned_orps.csv"))
