@@ -5,7 +5,7 @@ source(here::here("scripts/connect_to_sql_server.R"))
 gi_csv_cleaned <- read_csv(file = paste0(config::get(
   "data_folderpath"),
   "02_cleaned/",
-  "gi_csv_cleaned.csv"),
+  "gi_csv_cleaned_orpp.csv"),
   col_types = list(
     nhsno = col_character()
   ))
