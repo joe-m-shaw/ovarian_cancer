@@ -37,7 +37,7 @@ patient_id_df <- sample_tbl |>
   collect() |> 
   rename(rno = i_gene_r_no)
 
-glvar_igene_for_collation <- glvar_igene_extracted |>
+glvar_igene_for_bind <- glvar_igene_extracted |>
   rename(rno = referral_number) |> 
   mutate(data_source = "igene",
          genotype = "") |> 
@@ -67,7 +67,7 @@ tvar_igene_for_bind <- tvar_igene_extracted |>
 
 # Add patient identifiers to DNA database data ----------------------------
 
-glvar_dnadb_for_collation <- glvar_dnadb_cleaned |> 
+glvar_dnadb_for_bind <- glvar_dnadb_cleaned |> 
   select(-nhsno) |> 
   mutate(data_source = "dnadb") |> 
   left_join(patient_id_df, by = "labno") |> 
@@ -76,12 +76,9 @@ glvar_dnadb_for_collation <- glvar_dnadb_cleaned |>
     glvar_reflex_test = "",
     glvar_quality_score = "",
     glvar_zygosity = "",
-    glvar_hgvs_description = "", 
-    glvar_classification = "",
     glvar_inheritance = "", 
     glvar_genomic_coordinates = "",
     glvar_incidental_finding = "", 
-    glvar_description = "",
     glvar_copy_number_state = "", 
     glvar_checker_comments = "") |> 
   select(nhsno, labno, rno, data_source, 
@@ -123,8 +120,8 @@ tvar_dnadb_for_bind <- tvar_dnadb_cleaned |>
 
 # Join germline variant data ----------------------------------------------
 
-glvar_dnadb_igene_bound <- rbind(glvar_dnadb_for_collation,
-                                    glvar_igene_for_collation)
+glvar_dnadb_igene_bound <- rbind(glvar_dnadb_for_bind,
+                                    glvar_igene_for_bind)
 
 glvar_dnadb_igene_bound_orpp <- glvar_dnadb_igene_bound |> 
   mutate(glvar_headline_result = factor(glvar_headline_result,
