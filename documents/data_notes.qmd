@@ -1,0 +1,62 @@
+---
+title: "Data Notes"
+author: "Joe Shaw"
+format: pdf
+editor: visual
+---
+
+# General issues
+
+-   Samples may have been tested multiple times, on multiple different tests, with results entered on different databases.
+
+-   The data is multi-dimensional.
+    An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
+
+-   Single nucleotide variants and copy number variants are stored in a separate format.
+
+# DNA Database
+
+-   DNA database does not have a "headline result" field.
+    As such, there is no way to know what result was included in the final report.
+    For example, the "genotype" field may have a variant in which was classified as being of uncertain significance, and so a result of "no pathogenic variants" was issued.
+
+-   DNA Database has no "patient" table.
+    This means some sample entries do not have NHS numbers.
+
+-   The "description" field for worksheets is free-type, so there are different strings identifying SeqOne GI worksheets.
+
+-   The genotype field can have mutl
+
+-   NHS numbers may not have been entered on DNA Database or iGene, which could lead to results being missed when joining results using an NHS number.
+
+-   DNA database and iGene have different names for the same variable.
+    Example: R number DNA database also has different names for the same variable in different tables.
+
+-   The "genotype" field has SNV and CNV results separated by a semicolon.
+    But there are cases where 2 SNVs are present (example: 24030433).
+
+-   Analysis can fail for a sample, or for only SNVs or only CNVs.
+
+# iGene
+
+-   There is no record of the lab number (DNA number) in iGene.
+
+# SeqOne GI CSVs
+
+-   Files are saved in a separate folder for every worksheet.
+
+-   The naming convention for SeqOne GI csv files changed over time.
+
+-   CSV files were not exported for validation samples, only PDFs were exported.
+
+-   Scientists occasionally (accidentally) rename columns.
+    There is a risk that they could delete data and I wouldn't know.
+
+-   The version of SomaHRD changed over time.
+
+-   Scientists may make decisions about the data which are not reflected in the csv file - for example a sample may have acceptable quality metrics and a score of 0.49 (GI negative), but the scientist may use their professional judgement to say that this result is inconclusive because the score is so borderline.
+
+# Conclusion
+
+There is no perfect way to do this.
+Embrace and display the imperfection of joining these data together.

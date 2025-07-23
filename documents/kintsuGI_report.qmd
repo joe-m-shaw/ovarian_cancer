@@ -1,0 +1,85 @@
+---
+title: "KintsuGI Report"
+author: "Joe Shaw"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-data
+#| include: FALSE
+
+library(tidyverse)
+
+gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
+                                   "03_joined/",
+                                   "gi_glvar_joined.csv"))
+
+```
+
+```{r}
+#| label: draw-plot
+#| echo: FALSE
+
+gi_glvar_joined_mod <- gi_glvar_joined |> 
+  mutate(gl_snv_gene = str_extract(string = glvar_hgvs_description,
+                                pattern = ".*(BRCA1|BRCA2|BRIP1|PALB2|RAD51D|MSH2|MSH6).*",
+                                group = 1),
+         gl_cnv_gene = str_extract(string = glvar_description,
+                                pattern = ".*(BRCA1|BRCA2|BRIP1|PALB2|RAD51D|MSH2|MSH6).*",
+                                group = 1),
+         gl_gene = case_when(
+           is.na(gl_snv_gene) & !is.na(gl_cnv_gene) ~gl_cnv_gene,
+           !is.na(gl_snv_gene) & is.na(gl_cnv_gene) ~gl_snv_gene
+         ),
+         glvar_classification = case_when(
+           # Likely pathogenic reduced penetrance
+           glvar_hgvs_description == "NM_000059.3(BRCA2):c.9302T>G p.(Leu3101Arg)" ~"Likely pathogenic",
+           TRUE ~glvar_classification
+         ),
+         glvar_classification = factor(glvar_classification,
+                                       levels = c("Pathogenic",
+                                                  "Likely pathogenic",
+                                                  "Uncertain significance")))
+
+gi_glvar_plot <- gi_glvar_joined_mod |> 
+  filter(glvar_headline_result == "Reportable variant(s) detected") |> 
+  filter(status != "Non-conclusive") |> 
+  ggplot(aes(x = gl_gene, y = score)) +
+  geom_jitter(shape = 21, 
+              size = 2,
+              width = 0.1, 
+              alpha = 0.8,
+              aes(fill = glvar_classification)) +
+  theme_bw() +
+  scale_fill_manual(values = c("#FF3300",
+                               "#FF9900",
+                               "#CCCCCC")) +
+  labs(x = "Germline gene",
+       fill = "Variant classification",
+       y = "SeqOne GI score",
+       title = "GI results for patients with germline variants")
+
+gi_glvar_plot
+
+```
+
+
+```{r}
+
+glvar_neg_gi <- gi_glvar_joined_mod |> 
+  filter(glvar_headline_result == "Reportable variant(s) detected") |> 
+  filter(status != "Non-conclusive") |> 
+  filter(score < 0.5) |> 
+  filter(glvar_classification %in% c("Pathogenic", "Likely pathogenic")) |> 
+  filter(gl_gene %in% c("BRCA1", "BRCA2"))
+  
+
+glvar_neg_gi
+
+```
+
+
+
+
+
