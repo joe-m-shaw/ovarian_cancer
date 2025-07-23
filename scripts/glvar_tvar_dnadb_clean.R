@@ -32,6 +32,12 @@ glvar_dnadb_classifications <- glvar_dnadb_extracted |>
     glvar_hgvs_description = str_extract(string = glvar_snv_result,
                                          pattern = "(.*)\\s\\d{1,3}%",
                                          group = 1),
+    # Remove non-pathogenic BRCA1 variant from sample 24030433 which also
+    # has a pathogenic BRCA2 variant
+    glvar_hgvs_description = case_when(
+      genotype == "BRCA2 c.4276dup p.(Thr1426AsnfsTer12) 48%; BRCA1 c.5074+13C>A 43%; CNV Analysis Failed" ~"BRCA2 c.4276dup p.(Thr1426AsnfsTer12)",
+      TRUE ~glvar_hgvs_description
+    ),
     # glvar_description is used in the iGene results to describe CNVs
     glvar_description = str_extract(string = glvar_cnv_result,
                                   pattern = ".*Ex.*")
