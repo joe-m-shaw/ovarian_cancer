@@ -18,6 +18,8 @@ This document is a summation of the various issues I've encountered working with
 
 -   DNA Database and iGene have different names for the same variable, such as the R number ("i_gene_r_no" on DNA Database and "referral" on iGene).
 
+-   The DNA Database labno and iGene rno are not uniquely aligned: some rnos have multiple labnos.
+
 # DNA Database
 
 -   DNA database does not have a "headline result" field.
@@ -37,6 +39,8 @@ This document is a summation of the various issues I've encountered working with
     But there are cases where 2 SNVs are present (example: 24030433).
 
 -   Analysis can fail for a sample, or for only SNVs or only CNVs.
+
+-   Samples may have been analysed on two different panels on the PanSolid enrichment (example: 23060079).
 
 # iGene
 
