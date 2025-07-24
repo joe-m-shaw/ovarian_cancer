@@ -34,13 +34,32 @@ gi_ws_filepaths <- gi_ws_list |>
                                       pattern = "hrd-results.*csv")) |> 
   flatten()
 
+# Issue 1: the same file may be saved in multiple folders, so filepath cannot 
+# be used as a unique identifier
+# Issue 2: the folder structure is not consistent. Some files are saved in a
+# folder called the worksheet name, others are in sub-folders. This makes
+# parsing filenames from filepaths with regex more complicated.
+
+filename_regex <- regex(
+  r"[
+  /           # The last forward slash in the filepath
+  ([^/]*      # Variable name before hrd-results but must not include forward slash
+  hrd-results # All filenames contain hrd-results somewhere in the string
+  .*          # Variable name after hrd-results
+  \.csv)      # File type
+  ]",
+  comments = TRUE
+)
+
 gi_filepath_df <- tibble(
   filepath = unlist(gi_ws_filepaths)) |> 
   mutate(filename = str_extract(string = filepath,
-                                pattern = "WS\\d{6}/(.*hrd-results.*\\.csv)",
-                                group = 1))
+                                pattern = filename_regex,
+                                group = 1),
+         filename_length = str_length(filename))
 
 stopifnot(anyNA(gi_filepath_df$filename) == FALSE)
+stopifnot(max(gi_filepath_df$filename_length) < 50)
 
 # Identify new files ------------------------------------------------------
 
@@ -66,11 +85,11 @@ gi_archive_file_df <- tibble(
 gi_new_filepath_df <- gi_filepath_df |> 
   filter(!filename %in% gi_archive_file_df$filename)
 
-if(length(gi_new_filepath_df) > 0) {
+if(nrow(gi_new_filepath_df) > 0) {
   message(paste0(length(gi_new_filepath_df$filepath),
                  " new files identified"))
 } else {
-  stop("No new files identified")
+  stop("No new files identified. Stopping GI csv collation.")
 }
 
 gi_filepaths_to_copy <- gi_new_filepath_df$filepath
