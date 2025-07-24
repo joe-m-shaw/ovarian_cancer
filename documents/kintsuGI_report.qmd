@@ -15,11 +15,9 @@ gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
                                    "gi_glvar_joined.csv"))
 
-```
+stopifnot(anyNA(gi_glvar_joined$glvar_headline_result) == FALSE)
 
-```{r}
-#| label: draw-plot
-#| echo: FALSE
+stopifnot(anyDuplicated(gi_glvar_joined$nhsno) == 0)
 
 gi_glvar_joined_mod <- gi_glvar_joined |> 
   mutate(gl_snv_gene = str_extract(string = glvar_hgvs_description,
@@ -42,9 +40,35 @@ gi_glvar_joined_mod <- gi_glvar_joined |>
                                                   "Likely pathogenic",
                                                   "Uncertain significance")))
 
-gi_glvar_plot <- gi_glvar_joined_mod |> 
+gi_glvar_joined_conclusive <- gi_glvar_joined_mod |> 
+  filter(status != "Non-conclusive" &
+           glvar_headline_result %in% c("No reportable variant(s) detected",
+                                        "Reportable variant(s) detected"))
+
+```
+
+There are `r nrow(gi_glvar_joined_conclusive)` patients with results from SeqOne genomic instability (GI) testing and germline variant testing.
+
+```{r}
+#| label: gl-gi-results
+#| include: FALSE
+
+gi_gl_plot <- ggplot(gi_glvar_joined_conclusive, aes(x = glvar_headline_result,
+                                       y = score)) +
+  geom_jitter(shape = 21, width = 0.2) +
+  theme_bw() +
+  labs(x = "Germline result", 
+       y = "SeqOne GI score",
+       title = "GI results for patients with germline testing results")
+
+```
+
+```{r}
+#| label: gi-gl-results-variants
+#| echo: FALSE
+
+gi_glvar_plot <- gi_glvar_joined_conclusive |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
-  filter(status != "Non-conclusive") |> 
   ggplot(aes(x = gl_gene, y = score)) +
   geom_jitter(shape = 21, 
               size = 2,
@@ -58,28 +82,26 @@ gi_glvar_plot <- gi_glvar_joined_mod |>
   labs(x = "Germline gene",
        fill = "Variant classification",
        y = "SeqOne GI score",
-       title = "GI results for patients with germline variants")
+       title = "GI results for patients with reportable germline variants")
 
 gi_glvar_plot
 
 ```
 
-
 ```{r}
+#| label: gi-neg-gl-pos
+#| echo: FALSE
 
 glvar_neg_gi <- gi_glvar_joined_mod |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
   filter(status != "Non-conclusive") |> 
   filter(score < 0.5) |> 
   filter(glvar_classification %in% c("Pathogenic", "Likely pathogenic")) |> 
-  filter(gl_gene %in% c("BRCA1", "BRCA2"))
-  
+  filter(gl_gene %in% c("BRCA1", "BRCA2")) |> 
+  select(nhsno,  firstname, surname, score, status, glvar_hgvs_description,
+         glvar_classification)
 
-glvar_neg_gi
+knitr::kable(glvar_neg_gi)
 
 ```
-
-
-
-
 

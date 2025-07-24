@@ -72,6 +72,8 @@ I have developed a naming convention for this project to (hopefully) make the pr
 
 -   **orps:** One Result Per Sample
 
+-   **ICP:** Inherited Cancer Panel
+
 # File naming
 
 The naming convention for files and tables is: genetic test, then data source, then what has been done to the data.
