@@ -24,6 +24,8 @@ stopifnot(anyNA(gi_csv_collated$status) == 0)
 
 # Get sample identifiers --------------------------------------------------
 
+message("Adding sample identifiers to GI csv data")
+
 gi_labnos <- unique(gi_csv_collated$labno)
 
 gi_sample_info <- sample_tbl |> 
@@ -50,6 +52,8 @@ gi_csv_collated_patient_info <- gi_csv_collated |>
 stopifnot(anyNA(gi_csv_collated_patient_info$firstname) == FALSE)
 
 # Annotate validation data ------------------------------------------------
+
+message("Annotating GI csv data with validation information")
 
 DOC6192_validation_worksheets <- c("WS133557", "WS134687", "WS134928", 
                                    "WS135001", "WS135498")
@@ -85,6 +89,8 @@ stopifnot(length(grep(pattern = "[[:digit:]]",
      gi_csv_collated_validation_info$full_name)) == 0)
 
 # Filter to one result per patient ----------------------------------------
+
+message("Filtering to one result per patient")
 
 gi_csv_cleaned_orpp <- gi_csv_collated_validation_info |> 
   filter(!is.na(nhsno) &
@@ -127,6 +133,8 @@ if(length(anyDuplicated(gi_csv_cleaned_orpp$full_name)) != 0){
 
 # Filter to one result per sample -----------------------------------------
 
+message("Filtering to one result per sample")
+
 gi_csv_cleaned_orps <- gi_csv_collated_validation_info |> 
   filter(service_validation == "service" &
            patient_non_patient == "patient") |> 
@@ -139,6 +147,8 @@ stopifnot(nrow(gi_csv_cleaned_orps[gi_csv_cleaned_orps$labno == "24045060" &
                       gi_csv_cleaned_orps$status == "Positive",]) == 1)
 
 # Export cleaned data -----------------------------------------------------
+
+message("Exporting cleaned GI csv data")
 
 write_csv(gi_csv_cleaned_orpp,
           paste0(config::get("data_folderpath"),
