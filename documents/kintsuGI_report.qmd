@@ -6,10 +6,66 @@ editor: visual
 ---
 
 ```{r}
-#| label: load-data
+#| label: packages
 #| include: FALSE
 
 library(tidyverse)
+library(janitor)
+
+```
+
+# GI sample results
+
+Here are the results for the number of samples tested with the SeqOne pipeline, one result per sample.
+
+```{r}
+#| label: gi-sample-results
+#| echo: FALSE
+#| message: FALSE
+
+gi_csv_cleaned_orps <- read_csv(paste0(config::get("data_folderpath"),
+                                       "02_cleaned/gi_csv_cleaned_orps.csv"))
+
+tbl_gi_orps <- gi_csv_cleaned_orps |> 
+  group_by(status) |> 
+  count() |> 
+  rename("Number of samples" = n,
+         "GI status" = status) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_orps)
+
+```
+
+# GI patient results
+
+Here are the results for the number of patients tested with the SeqOne pipeline, one result per patient.
+
+```{r}
+#| label: gi-patient-results
+#| echo: FALSE
+#| message: FALSE
+
+gi_csv_cleaned_orpp <- read_csv(paste0(config::get("data_folderpath"),
+                                       "02_cleaned/gi_csv_cleaned_orpp.csv"))
+
+tbl_gi_orpp <- gi_csv_cleaned_orpp |> 
+  group_by(status) |> 
+  count() |> 
+  rename("Number of patients" = n,
+         "GI status" = status) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_orpp)
+
+```
+
+# Germline results
+
+```{r}
+#| label: load-data
+#| include: FALSE
+#| message: FALSE
 
 gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
@@ -47,19 +103,21 @@ gi_glvar_joined_conclusive <- gi_glvar_joined_mod |>
 
 ```
 
-There are `r nrow(gi_glvar_joined_conclusive)` patients with results from SeqOne genomic instability (GI) testing and germline variant testing.
+There are the results for patients with conclusive results from SeqOne genomic instability (GI) testing and germline variant testing.
 
 ```{r}
-#| label: gl-gi-results
-#| include: FALSE
+#| label: tbl-gi-glvar
+#| echo: FALSE
 
-gi_gl_plot <- ggplot(gi_glvar_joined_conclusive, aes(x = glvar_headline_result,
-                                       y = score)) +
-  geom_jitter(shape = 21, width = 0.2) +
-  theme_bw() +
-  labs(x = "Germline result", 
-       y = "SeqOne GI score",
-       title = "GI results for patients with germline testing results")
+tbl_gi_glvar <- gi_glvar_joined_conclusive |>
+  group_by(status, glvar_headline_result) |> 
+  count() |> 
+  rename("SeqOne GI status" = status,
+         "Germline result" = glvar_headline_result,
+         "Number of patients" = n) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_glvar)
 
 ```
 
@@ -88,6 +146,8 @@ gi_glvar_plot
 
 ```
 
+## Patients with germline BRCA variants and negative GI scores
+
 ```{r}
 #| label: gi-neg-gl-pos
 #| echo: FALSE
@@ -98,10 +158,11 @@ glvar_neg_gi <- gi_glvar_joined_mod |>
   filter(score < 0.5) |> 
   filter(glvar_classification %in% c("Pathogenic", "Likely pathogenic")) |> 
   filter(gl_gene %in% c("BRCA1", "BRCA2")) |> 
-  select(nhsno,  firstname, surname, score, status, glvar_hgvs_description,
-         glvar_classification)
+  select(nhsno, surname, score, glvar_hgvs_description) |> 
+  mutate(score = round(score, 2))
 
 knitr::kable(glvar_neg_gi)
 
 ```
+
 
