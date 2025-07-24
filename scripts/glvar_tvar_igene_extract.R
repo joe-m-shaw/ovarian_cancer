@@ -69,16 +69,25 @@ tests_in_wide_tables <- c(unique(glvar_igene$test_identifier),
 # Check no tests have been lost from the dataset
 stopifnot(length(setdiff(tests_in_eval_hrd, tests_in_wide_tables)) == 0)
 
+
+# Remove entries without headline results ---------------------------------
+
+glvar_igene_no_na <- glvar_igene |> 
+  filter(!is.na(glvar_headline_result))
+
+tvar_igene_no_na <- tvar_igene |> 
+  filter(!is.na(tvar_headline_result))
+
 # Export results ----------------------------------------------------------
 
 message("Exporting iGene results")
 
-write_csv(glvar_igene,
+write_csv(glvar_igene_no_na,
           paste0(config::get("data_folderpath"),
                  "01_initial/",
                  "glvar_igene_extracted.csv"))
 
-write_csv(tvar_igene,
+write_csv(tvar_igene_no_na,
           paste0(config::get("data_folderpath"),
                  "01_initial/",
                  "tvar_igene_extracted.csv"))
