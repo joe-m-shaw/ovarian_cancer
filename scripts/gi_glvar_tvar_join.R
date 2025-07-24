@@ -23,7 +23,7 @@ tvar_dnadb_igene_bound_orpp <- read_csv(paste0(config::get("data_folderpath"),
                                           nhsno = col_character()
                                         ))
 
-# Join data ---------------------------------------------------------------
+# Join GI and glvar data --------------------------------------------------
 
 gi_csv_cleaned_orpp_for_join <- gi_csv_cleaned_orpp |> 
   rename(gi_labno = labno) |> 
@@ -37,16 +37,23 @@ glvar_dnadb_igene_bound_orpp_for_join <- glvar_dnadb_igene_bound_orpp |>
          glvar_genotype, glvar_hgvs_description,
          glvar_classification, glvar_description)
 
+gi_glvar_joined <- gi_csv_cleaned_orpp_for_join |> 
+  inner_join(glvar_dnadb_igene_bound_orpp_for_join,
+            by = "nhsno",
+            relationship = "one-to-one") 
+
+# Join GI and tvar data ---------------------------------------------------
+
 tvar_dnadb_igene_bound_orpp_for_join <- tvar_dnadb_igene_bound_orpp |> 
   rename(tvar_labno = labno,
          tvar_genotype = genotype) |> 
   select(nhsno, tvar_labno, tvar_headline_result,
          tvar_genotype, tvar_hgvs_description)
 
-gi_glvar_joined <- gi_csv_cleaned_orpp_for_join |> 
-  filter(!is.na(nhsno)) |> 
-  inner_join(glvar_dnadb_igene_bound_orpp_for_join,
-            by = "nhsno") 
+gi_tvar_joined <- gi_csv_cleaned_orpp_for_join |> 
+  inner_join(tvar_dnadb_igene_bound_orpp_for_join,
+             by = "nhsno",
+             relationship = "one-to-one") 
 
 # Export data -------------------------------------------------------------
 
@@ -54,3 +61,8 @@ write_csv(gi_glvar_joined,
           paste0(config::get("data_folderpath"),
                  "03_joined/",
                  "gi_glvar_joined.csv"))
+
+write_csv(gi_tvar_joined,
+          paste0(config::get("data_folderpath"),
+                 "03_joined/",
+                 "gi_tvar_joined.csv"))
