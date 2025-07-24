@@ -5,14 +5,18 @@ format: pdf
 editor: visual
 ---
 
+This document is a summation of the various issues I've encountered working with these datasets.
+
 # General issues
 
--   Samples may have been tested multiple times, on multiple different tests, with results entered on different databases.
+-   Samples may have been tested multiple times on multiple different tests with results entered on different databases.
 
 -   The data is multi-dimensional.
     An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
 
 -   Single nucleotide variants and copy number variants are stored in a separate format.
+
+-   DNA Database and iGene have different names for the same variable, such as the R number ("i_gene_r_no" on DNA Database and "referral" on iGene).
 
 # DNA Database
 
@@ -23,14 +27,11 @@ editor: visual
 -   DNA Database has no "patient" table.
     This means some sample entries do not have NHS numbers.
 
+-   NHS numbers may not have been entered on DNA Database, which could lead to results being missed when joining results using an NHS number.
+
 -   The "description" field for worksheets is free-type, so there are different strings identifying SeqOne GI worksheets.
 
--   The genotype field can have mutl
-
--   NHS numbers may not have been entered on DNA Database or iGene, which could lead to results being missed when joining results using an NHS number.
-
--   DNA database and iGene have different names for the same variable.
-    Example: R number DNA database also has different names for the same variable in different tables.
+-   DNA Database has different names for the same variable in different tables.
 
 -   The "genotype" field has SNV and CNV results separated by a semicolon.
     But there are cases where 2 SNVs are present (example: 24030433).
@@ -55,8 +56,3 @@ editor: visual
 -   The version of SomaHRD changed over time.
 
 -   Scientists may make decisions about the data which are not reflected in the csv file - for example a sample may have acceptable quality metrics and a score of 0.49 (GI negative), but the scientist may use their professional judgement to say that this result is inconclusive because the score is so borderline.
-
-# Conclusion
-
-There is no perfect way to do this.
-Embrace and display the imperfection of joining these data together.
