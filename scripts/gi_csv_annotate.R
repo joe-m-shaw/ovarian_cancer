@@ -14,26 +14,13 @@ gi_csv_collated <- read_csv(file = paste0(
   "gi_csv_collated.csv"),
   col_types = list(
     labno = col_character(),
-    worksheet = col_character(),
-    sample = col_character(),
-    analysis_date = col_character(),
-    date = col_datetime(),
-    somahrd_version = col_character(),
-    lga = col_integer(),
-    lpc = col_integer(),
-    score = col_number(),
-    status = col_character(),
-    brca_status = col_logical(),
-    brca_mutation = col_logical(),
-    ccne1_cn = col_number(),
-    rad51b_cn = col_number(),
-    coverage = col_number(),
-    pct_mapped_reads = col_number(),
-    pct_tum_cell = col_number(),
-    gi_confidence = col_number(),
-    low_tumor_fraction = col_number(),
-    filepath = col_character()
-  ))
+    status = col_factor(levels = c("Positive",
+                                   "Negative",
+                                   "Non-conclusive"))
+    ))
+
+stopifnot(nrow(gi_csv_collated) != 0)
+stopifnot(anyNA(gi_csv_collated$status) == 0)
 
 # Get sample identifiers --------------------------------------------------
 
@@ -47,10 +34,17 @@ gi_sample_info <- sample_tbl |>
 stopifnot(anyNA.data.frame(gi_sample_info |> 
                    select(-nhsno)) == FALSE)
 
+stopifnot(length(setdiff(gi_sample_info$labno, gi_labnos)) == 0)
+
+stopifnot(anyDuplicated(gi_sample_info$labno) == 0)
+
 # Add sample identifiers --------------------------------------------------
 
 gi_csv_collated_patient_info <- gi_csv_collated |> 
-  left_join(gi_sample_info, by = "labno") |> 
+  left_join(gi_sample_info, by = "labno",
+            # One lab number can have multiple GI results, but should only
+            # have one NHS number
+            relationship = "many-to-one") |> 
   relocate(labno, surname, firstname, nhsno)
 
 stopifnot(anyNA(gi_csv_collated_patient_info$firstname) == FALSE)
@@ -80,9 +74,17 @@ gi_csv_collated_validation_info <- gi_csv_collated_patient_info |>
   patient_non_patient = case_when(
     surname %in% c("Seraseq", "GenQA") ~"non-patient",
     TRUE ~"patient"
-  ))
+  ),
+  full_name = paste0(firstname, " ", surname))
 
-# Remove duplicates -------------------------------------------------------
+stopifnot(anyNA(gi_csv_collated_validation_info$service_validation) == FALSE)
+stopifnot(anyNA(gi_csv_collated_validation_info$patient_non_patient) == FALSE)
+
+# Check name fields do not contain numbers
+stopifnot(length(grep(pattern = "[[:digit:]]",
+     gi_csv_collated_validation_info$full_name)) == 0)
+
+# Filter to one result per patient ----------------------------------------
 
 gi_csv_cleaned_orpp <- gi_csv_collated_validation_info |> 
   filter(!is.na(nhsno) &
@@ -100,11 +102,41 @@ stopifnot(unique(gi_csv_cleaned_orpp$service_validation) == "service")
 stopifnot(anyDuplicated(gi_csv_cleaned_orpp$labno) == 0)
 stopifnot(anyDuplicated(gi_csv_cleaned_orpp$nhsno) == 0)
 
+# Check the lab number with a conclusive result has been selected for 
+# patients with multiple samples including non-conclusive results
+stopifnot(nrow(gi_csv_cleaned_orpp[gi_csv_cleaned_orpp$labno == "24044667" &
+                           gi_csv_cleaned_orpp$status == "Negative",]) == 1)
+
+stopifnot(nrow(gi_csv_cleaned_orpp[gi_csv_cleaned_orpp$labno == "24032495" &
+                           gi_csv_cleaned_orpp$status == "Negative",]) == 1)
+
+stopifnot(nrow(gi_csv_cleaned_orpp[gi_csv_cleaned_orpp$labno == "24045338" &
+                          gi_csv_cleaned_orpp$status == "Negative",]) == 1)
+
+stopifnot(nrow(gi_csv_cleaned_orpp[gi_csv_cleaned_orpp$labno == "24064756" &
+                          gi_csv_cleaned_orpp$status == "Positive",]) == 1)
+
+stopifnot(nrow(gi_csv_cleaned_orpp[gi_csv_cleaned_orpp$labno == "25030664" &
+                          gi_csv_cleaned_orpp$status == "Positive",]) == 1)
+
+if(length(anyDuplicated(gi_csv_cleaned_orpp$full_name)) != 0){
+  message("There are patients with identical names and different NHS numbers")
+} else{
+  message("All patients have unique names")
+}
+
+# Filter to one result per sample -----------------------------------------
+
 gi_csv_cleaned_orps <- gi_csv_collated_validation_info |> 
   filter(service_validation == "service" &
            patient_non_patient == "patient") |> 
   arrange(labno, status) |> 
   filter(!duplicated(labno))
+
+stopifnot(anyDuplicated(gi_csv_cleaned_orps$labno) == 0)
+
+stopifnot(nrow(gi_csv_cleaned_orps[gi_csv_cleaned_orps$labno == "24045060" &
+                      gi_csv_cleaned_orps$status == "Positive",]) == 1)
 
 # Export cleaned data -----------------------------------------------------
 
