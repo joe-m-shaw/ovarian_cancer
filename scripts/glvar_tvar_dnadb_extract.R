@@ -73,7 +73,6 @@ pansolid_test_strings <- unique(grep(pattern = "seq\\span",
 
 tvar_dnadb_results <- dnadb_results |> 
   filter(test %in% c(pansolid_test_strings,
-                     "Proxy reanalysis proxy WS for original WS137613",
                      "NGS Pansolid")) |> 
   left_join(labno_df, by = "labno") |> 
   relocate(nhsno)
