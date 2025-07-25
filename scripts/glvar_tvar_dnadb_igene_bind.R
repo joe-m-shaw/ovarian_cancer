@@ -122,7 +122,6 @@ tvar_dnadb_for_bind <- tvar_dnadb_cleaned |>
     tvar_reflex_test = "", 
     tvar_failed_hotspots = "",
     tvar_vaf_percent = "",
-    tvar_classification = "", 
     tvar_quality_score = "",
     tvar_genomic_coordinates = "", 
     tvar_panel_coverage = "",
@@ -143,12 +142,45 @@ stopifnot(nrow(tvar_dnadb_for_bind) == nrow(tvar_dnadb_cleaned))
 
 # Bind germline variant data ----------------------------------------------
 
-message("Binding iGene and DNA Database data")
+message("Binding germline iGene and DNA Database data")
 
 glvar_dnadb_igene_bound <- rbind(glvar_dnadb_for_bind,
                                     glvar_igene_for_bind)
 
-glvar_dnadb_igene_bound_orpp <- glvar_dnadb_igene_bound |> 
+# Annotate germline genes -------------------------------------------------
+
+message("Annotating germline gene information")
+
+gl_genes <- c("BRCA1", "BRCA2", "BRIP1", "PALB2", "RAD51D", 
+              "MSH2", "MSH6", "CHEK2")
+
+gl_gene_regex <- paste0(".*(", paste0(gl_genes, collapse = "|"), ").*")
+
+glvar_dnadb_igene_bound_genes <- glvar_dnadb_igene_bound |> 
+  mutate(gl_snv_gene = str_extract(string = glvar_hgvs_description,
+                                 pattern = gl_gene_regex,
+                                 group = 1),
+       gl_cnv_gene = str_extract(string = glvar_description,
+                                 pattern = gl_gene_regex,
+                                 group = 1),
+       gl_gene = case_when(
+         is.na(gl_snv_gene) & !is.na(gl_cnv_gene) ~gl_cnv_gene,
+         !is.na(gl_snv_gene) & is.na(gl_cnv_gene) ~gl_snv_gene
+       ),
+       glvar_classification = case_when(
+         # Likely pathogenic reduced penetrance
+         glvar_hgvs_description == "NM_000059.3(BRCA2):c.9302T>G p.(Leu3101Arg)" ~"Likely pathogenic",
+         TRUE ~glvar_classification
+       ))
+
+samples_with_gl_variants <- glvar_dnadb_igene_bound_genes |> 
+  filter(glvar_headline_result == "Reportable variant(s) detected")
+
+stopifnot(anyNA(samples_with_gl_variants$gl_gene) == FALSE)
+
+# Filter germline data to one result per patient --------------------------
+
+glvar_dnadb_igene_bound_orpp <- glvar_dnadb_igene_bound_genes |> 
   filter(!is.na(nhsno)) |> 
   mutate(glvar_headline_result = factor(glvar_headline_result,
                                         levels = c("Reportable variant(s) detected",
@@ -157,7 +189,7 @@ glvar_dnadb_igene_bound_orpp <- glvar_dnadb_igene_bound |>
   arrange(nhsno, glvar_headline_result) |> 
   filter(!duplicated(nhsno))
 
-anyNA(glvar_dnadb_igene_bound_orpp$nhsno)
+stopifnot(anyNA(glvar_dnadb_igene_bound_orpp$nhsno) == FALSE)
 
 # Some samples have multiple results with inconclusive results. 
 # Check that the conclusive results have been selected for 3 samples.
@@ -176,10 +208,33 @@ stopifnot(nrow(glvar_dnadb_igene_bound_orpp |>
 
 # Bind tumour variant data ------------------------------------------------
 
+message("Binding tumour iGene and DNA Database data")
+
 tvar_dnadb_igene_bound <- rbind(tvar_dnadb_for_bind,
                                 tvar_igene_for_bind)
 
-tvar_dnadb_igene_bound_orpp <- tvar_dnadb_igene_bound |> 
+# Annotate tumour variant genes -------------------------------------------
+
+message("Annotating tumour variant gene information")
+
+tvar_genes <- c("BRCA1", "BRCA2", "KRAS", "BRAF")
+
+tvar_gene_regex <- paste0(".*(", paste0(tvar_genes, collapse = "|"), ").*")
+
+tvar_dnadb_igene_bound_genes <- tvar_dnadb_igene_bound |> 
+  mutate(
+    tvar_gene = str_extract(string = tvar_hgvs_description,
+                            pattern = tvar_gene_regex,
+                            group = 1))
+
+samples_with_t_variants <- tvar_dnadb_igene_bound_genes |> 
+  filter(!is.na(tvar_hgvs_description))
+
+stopifnot(anyNA(samples_with_t_variants$tvar_gene) == FALSE)
+
+# Filter tumour variant data to one result per patient --------------------
+
+tvar_dnadb_igene_bound_orpp <- tvar_dnadb_igene_bound_genes |> 
   filter(!is.na(nhsno)) |> 
   mutate(tvar_headline_result = factor(tvar_headline_result,
                                         levels = c("Reportable variant(s) detected",

@@ -37,7 +37,8 @@ glvar_dnadb_igene_bound_orpp_for_join <- glvar_dnadb_igene_bound_orpp |>
          glvar_genotype = genotype) |> 
   select(nhsno, glvar_labno, glvar_headline_result,
          glvar_genotype, glvar_hgvs_description,
-         glvar_classification, glvar_description)
+         glvar_classification, glvar_description, 
+         gl_snv_gene, gl_cnv_gene, gl_gene)
 
 gi_glvar_joined <- gi_csv_cleaned_orpp_for_join |> 
   inner_join(glvar_dnadb_igene_bound_orpp_for_join,
@@ -52,7 +53,8 @@ tvar_dnadb_igene_bound_orpp_for_join <- tvar_dnadb_igene_bound_orpp |>
   rename(tvar_labno = labno,
          tvar_genotype = genotype) |> 
   select(nhsno, tvar_labno, tvar_headline_result,
-         tvar_genotype, tvar_hgvs_description)
+         tvar_genotype, tvar_hgvs_description, tvar_classification,
+         tvar_gene)
 
 gi_tvar_joined <- gi_csv_cleaned_orpp_for_join |> 
   inner_join(tvar_dnadb_igene_bound_orpp_for_join,
