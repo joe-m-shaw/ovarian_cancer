@@ -1,5 +1,5 @@
-library(tidyverse)
-library(janitor)
+library(tidyverse, quietly  = TRUE)
+library(janitor, quietly  = TRUE)
 
 # Connect to SQL server ---------------------------------------------------
 
@@ -56,6 +56,8 @@ gi_igene <- widen_by_test(df = eval_hrd,
 
 # Perform checks ----------------------------------------------------------
 
+message("Checking extracted glvar and tvar iGene data")
+
 stopifnot(nrow(glvar_igene) != 0)
 stopifnot(nrow(tvar_igene) != 0)
 stopifnot(nrow(gi_igene) != 0)
@@ -69,7 +71,6 @@ tests_in_wide_tables <- c(unique(glvar_igene$test_identifier),
 # Check no tests have been lost from the dataset
 stopifnot(length(setdiff(tests_in_eval_hrd, tests_in_wide_tables)) == 0)
 
-
 # Remove entries without headline results ---------------------------------
 
 glvar_igene_no_na <- glvar_igene |> 
@@ -77,6 +78,22 @@ glvar_igene_no_na <- glvar_igene |>
 
 tvar_igene_no_na <- tvar_igene |> 
   filter(!is.na(tvar_headline_result))
+
+# Check dates of entries --------------------------------------------------
+
+message(paste0("iGene germline variant data ranges from ",
+               format.Date(x = min(glvar_igene_no_na$test_order_date), 
+                           format = "%d %B %Y"),
+               " to ",
+               format.Date(x = max(glvar_igene_no_na$test_order_date), 
+                           format = "%d %B %Y")))
+
+message(paste0("iGene tumour variant data ranges from ",
+               format.Date(x = min(tvar_igene_no_na$test_order_date), 
+                           format = "%d %B %Y"),
+               " to ",
+               format.Date(x = max(tvar_igene_no_na$test_order_date), 
+                           format = "%d %B %Y")))
 
 # Export results ----------------------------------------------------------
 

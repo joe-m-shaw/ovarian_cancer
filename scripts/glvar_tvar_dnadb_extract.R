@@ -17,7 +17,7 @@ gi_nhsnos <- gi_csv_cleaned$nhsno
 
 # Identify all lab numbers from patients ----------------------------------
 
-message("Finding all lab numbers for patients with GI results")
+message("Finding all DNA Database lab numbers for patients with GI results")
 
 labno_df <- sample_tbl |> 
   filter(nhsno %in% gi_nhsnos) |> 
@@ -34,7 +34,7 @@ message("Extracting DNA Database results for all lab numbers")
 
 dnadb_results <- results_tbl |> 
   filter(labno %in% labno_query) |> 
-  select(labno, pcrid, test, genotype, genotype2,
+  select(labno, genodate, pcrid, test, genotype, genotype2,
          genocomm) |> 
   collect()
 
@@ -42,7 +42,7 @@ stopifnot(nrow(dnadb_results) != 0)
 
 # Extract germline variant results ----------------------------------------
 
-message("Finding germline DNA Database results")
+message("Finding germline variant DNA Database results")
 
 icp_test_strings <- unique(grep(pattern = "hs2(\\s|)icp", 
             x = dnadb_results$test, 
@@ -76,6 +76,21 @@ tvar_dnadb_results <- dnadb_results |>
                      "NGS Pansolid")) |> 
   left_join(labno_df, by = "labno") |> 
   relocate(nhsno)
+
+# Check date range of data ------------------------------------------------
+
+message(paste0("dnadb germline variant data ranges from ",
+               format.Date(x = min(glvar_dnadb_results$genodate), 
+                           format = "%d %B %Y"),
+               " to ",
+               format.Date(x = max(glvar_dnadb_results$genodate), 
+                           format = "%d %B %Y")))
+message(paste0("dnadb tumour variant data ranges from ",
+               format.Date(x = min(tvar_dnadb_results$genodate), 
+                           format = "%d %B %Y"),
+               " to ",
+               format.Date(x = max(tvar_dnadb_results$genodate), 
+                           format = "%d %B %Y")))
 
 # Export data -------------------------------------------------------------
 
