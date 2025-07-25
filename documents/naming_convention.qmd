@@ -36,9 +36,17 @@ I have developed a naming convention for this project to (hopefully) make the pr
     Any labno is an 8-digit string of numbers.
     The first two digits indicate the year the sample was received.
 
--   **rno:** the iGene referral (R) number.
-
 -   **nhsno:** the patient's 10 digit NHS number.
+
+-   **rno:** the iGene referral (R) number.
+    This number identifies a referral - one referral can have multiple samples.
+
+-   **sno:** the iGene sample (S) number.
+    This number identifies a sample, such as shavings from a formalin-fixed paraffin-embedded (FFPE) block.
+    One sample can have multiple derivatives.
+
+-   **dno:** the iGene derivative (D) number.
+    This number identifies material that is *derived* from a sample, such as DNA which is extracted from FFPE shavings.
 
 -   **pathno:** the identifier of the FFPE pathology block from which DNA was extracted.
     Different pathology labs have different formats for pathno.
