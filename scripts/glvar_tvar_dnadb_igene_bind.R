@@ -7,12 +7,14 @@ source(here::here("scripts/connect_to_sql_server.R"))
 glvar_igene_extracted <- read_csv(file = 
                                     paste0(config::get("data_folderpath"),
                                            "01_initial/",
-                                           "glvar_igene_extracted.csv"))
+                                           "glvar_igene_extracted.csv"),
+                                  show_col_types = FALSE)
 
 tvar_igene_extracted <- read_csv(file = 
                                     paste0(config::get("data_folderpath"),
                                            "01_initial/",
-                                           "tvar_igene_extracted.csv"))
+                                           "tvar_igene_extracted.csv"),
+                                 show_col_types = FALSE)
 
 glvar_dnadb_cleaned <- read_csv(file = 
                                   paste0(config::get("data_folderpath"),
@@ -32,7 +34,7 @@ tvar_dnadb_cleaned <- read_csv(file =
 
 # Add patient identifiers to iGene data -----------------------------------
 
-message("Adding patient identifiers before bind")
+message("Adding patient identifiers before binding iGene and DNA Database data")
 
 patient_id_df <- sample_tbl |> 
   select(nhsno, i_gene_r_no, labno) |> 

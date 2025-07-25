@@ -5,20 +5,23 @@ library(tidyverse)
 glvar_dnadb_extracted <- read_csv(
   paste0(config::get("data_folderpath"),
          "01_initial/",
-         "glvar_dnadb_extracted.csv"))
+         "glvar_dnadb_extracted.csv"),
+  show_col_types = FALSE)
 
 tvar_dnadb_extracted <- read_csv(
   paste0(config::get("data_folderpath"),
          "01_initial/",
-         "tvar_dnadb_extracted.csv"))
+         "tvar_dnadb_extracted.csv"),
+  show_col_types = FALSE)
 
 # Annotate variants in germline results -----------------------------------
 
-message("Adding variant classifications to germline DNA database results")
+message("Adding variant classifications to germline variant DNA database results")
 
 glvar_classifications <- read_csv(paste0(config::get("data_folderpath"),
                                          "01_initial/",
-                                         "glvar_classifications.csv"))
+                                         "glvar_classifications.csv"),
+                                  show_col_types = FALSE)
 
 glvar_dnadb_classifications <- glvar_dnadb_extracted |> 
   mutate(
@@ -85,7 +88,8 @@ message("Adding classifications to tumour variant DNA Database results")
 
 tvar_classifications <- read_csv(paste0(config::get("data_folderpath"),
                                         "01_initial/",
-                                        "tvar_classifications.csv"))
+                                        "tvar_classifications.csv"),
+                                 show_col_types = FALSE)
 
 
 tvar_dnadb_classifications <- tvar_dnadb_extracted |> 

@@ -25,6 +25,8 @@ tvar_dnadb_igene_bound_orpp <- read_csv(paste0(config::get("data_folderpath"),
 
 # Join GI and glvar data --------------------------------------------------
 
+message("Joining GI and germline variant data")
+
 gi_csv_cleaned_orpp_for_join <- gi_csv_cleaned_orpp |> 
   rename(gi_labno = labno) |> 
   select(nhsno, gi_labno, firstname, surname, lga, lpc, score,
@@ -44,6 +46,8 @@ gi_glvar_joined <- gi_csv_cleaned_orpp_for_join |>
 
 # Join GI and tvar data ---------------------------------------------------
 
+message("Joining GI and tumour variant data")
+
 tvar_dnadb_igene_bound_orpp_for_join <- tvar_dnadb_igene_bound_orpp |> 
   rename(tvar_labno = labno,
          tvar_genotype = genotype) |> 
@@ -56,6 +60,8 @@ gi_tvar_joined <- gi_csv_cleaned_orpp_for_join |>
              relationship = "one-to-one") 
 
 # Export data -------------------------------------------------------------
+
+message("Exporting joined data")
 
 write_csv(gi_glvar_joined,
           paste0(config::get("data_folderpath"),
