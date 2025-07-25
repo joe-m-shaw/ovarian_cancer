@@ -22,8 +22,8 @@ A final report is then rendered using Quarto (`kintsuGI_report.qmd`).
 
 ## What does kintsugi mean?
 
-[Kintsugi](https://en.wikipedia.org/wiki/Kintsugi) is a Japanese art of repairing broken pottery.
-The philosophy of kintsugi posits that breaking and rejoining are "part of the history of an object, rather than something to disguise".
+Kintsugi is the Japanese art of repairing broken pottery, literally meaning "golden joinery".
+The philosophy of kintsugi posits that breaking and rejoining are "part of the history of an object, rather than something to disguise" ([Wikipedia](https://en.wikipedia.org/wiki/Kintsugi)).
 This project aims to join data from multiple aspects of ovarian cancer testing, without trying to disguise this.
 As the last two letters of kintsugi can also stand for "Genomic Instability" I have capitalised them in the repo name.
 
