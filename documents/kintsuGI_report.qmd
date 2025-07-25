@@ -1,6 +1,6 @@
 ---
 title: "KintsuGI Report"
-author: "Joe Shaw"
+author: "Joe Shaw (CS20980)"
 format: pdf
 editor: visual
 ---
@@ -60,6 +60,8 @@ knitr::kable(tbl_gi_orpp)
 
 ```
 
+{{< pagebreak >}}
+
 # Germline results
 
 ```{r}
@@ -69,34 +71,18 @@ knitr::kable(tbl_gi_orpp)
 
 gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
-                                   "gi_glvar_joined.csv"))
+                                   "gi_glvar_joined.csv"),
+                            col_types = list(
+                              glvar_classification = col_factor(
+                                levels = c("Pathogenic",
+                                                  "Likely pathogenic",
+                                                  "Uncertain significance"))))
 
 stopifnot(anyNA(gi_glvar_joined$glvar_headline_result) == FALSE)
 
 stopifnot(anyDuplicated(gi_glvar_joined$nhsno) == 0)
 
-gi_glvar_joined_mod <- gi_glvar_joined |> 
-  mutate(gl_snv_gene = str_extract(string = glvar_hgvs_description,
-                                pattern = ".*(BRCA1|BRCA2|BRIP1|PALB2|RAD51D|MSH2|MSH6).*",
-                                group = 1),
-         gl_cnv_gene = str_extract(string = glvar_description,
-                                pattern = ".*(BRCA1|BRCA2|BRIP1|PALB2|RAD51D|MSH2|MSH6).*",
-                                group = 1),
-         gl_gene = case_when(
-           is.na(gl_snv_gene) & !is.na(gl_cnv_gene) ~gl_cnv_gene,
-           !is.na(gl_snv_gene) & is.na(gl_cnv_gene) ~gl_snv_gene
-         ),
-         glvar_classification = case_when(
-           # Likely pathogenic reduced penetrance
-           glvar_hgvs_description == "NM_000059.3(BRCA2):c.9302T>G p.(Leu3101Arg)" ~"Likely pathogenic",
-           TRUE ~glvar_classification
-         ),
-         glvar_classification = factor(glvar_classification,
-                                       levels = c("Pathogenic",
-                                                  "Likely pathogenic",
-                                                  "Uncertain significance")))
-
-gi_glvar_joined_conclusive <- gi_glvar_joined_mod |> 
+gi_glvar_joined_conclusive <- gi_glvar_joined |> 
   filter(status != "Non-conclusive" &
            glvar_headline_result %in% c("No reportable variant(s) detected",
                                         "Reportable variant(s) detected"))
@@ -125,6 +111,10 @@ knitr::kable(tbl_gi_glvar)
 #| label: gi-gl-results-variants
 #| echo: FALSE
 
+variant_class_colours <- c("#FF3300",
+                               "#FF9900",
+                               "#CCCCCC")
+
 gi_glvar_plot <- gi_glvar_joined_conclusive |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
   ggplot(aes(x = gl_gene, y = score)) +
@@ -134,9 +124,7 @@ gi_glvar_plot <- gi_glvar_joined_conclusive |>
               alpha = 0.8,
               aes(fill = glvar_classification)) +
   theme_bw() +
-  scale_fill_manual(values = c("#FF3300",
-                               "#FF9900",
-                               "#CCCCCC")) +
+  scale_fill_manual(values = variant_class_colours) +
   labs(x = "Germline gene",
        fill = "Variant classification",
        y = "SeqOne GI score",
@@ -152,7 +140,7 @@ gi_glvar_plot
 #| label: gi-neg-gl-pos
 #| echo: FALSE
 
-glvar_neg_gi <- gi_glvar_joined_mod |> 
+glvar_neg_gi <- gi_glvar_joined |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
   filter(status != "Non-conclusive") |> 
   filter(score < 0.5) |> 
@@ -164,5 +152,81 @@ glvar_neg_gi <- gi_glvar_joined_mod |>
 knitr::kable(glvar_neg_gi)
 
 ```
+
+{{< pagebreak >}}
+
+# Tumour variant results
+
+```{r}
+#| label: tbl-gi-tvar
+#| echo: FALSE
+
+gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
+                                   "03_joined/",
+                                   "gi_tvar_joined.csv"),
+                           col_types = list(
+                              tvar_classification = col_factor(
+                                levels = c("Pathogenic",
+                                           "Likely pathogenic",
+                                           "Uncertain significance",
+                                           NA))))
+
+gi_tvar_joined_conclusive <- gi_tvar_joined |> 
+  filter(status != "Non-conclusive" &
+           tvar_headline_result %in% c("No reportable variant(s) detected",
+                                        "Reportable variant(s) detected"))
+
+tbl_gi_tvar <- gi_tvar_joined_conclusive |> 
+  group_by(status, tvar_headline_result) |> 
+  count() |> 
+  rename("Number of patients" = n,
+         "Tumour result" = tvar_headline_result,
+         "SeqOne GI status" = status) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_tvar)
+
+```
+
+```{r}
+#| label: gi-t-results-variants
+#| echo: FALSE
+
+gi_tvar_plot <- gi_tvar_joined_conclusive |> 
+  filter(tvar_headline_result == "Reportable variant(s) detected") |>
+  filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
+  ggplot(aes(x = tvar_gene,
+             y = score)) +
+  geom_jitter(shape = 21, aes(fill = tvar_classification),
+              width = 0.2) +
+  theme_bw() +
+  scale_fill_manual(values = variant_class_colours) +
+  labs(x = "Tumour gene", y = "SeqOne GI score",
+       fill = "Variant classification",
+       title = "GI results for patients with somatic BRCA1/2 variants")
+
+gi_tvar_plot
+
+```
+
+```{r}
+
+gi_csv_cleaned_orpp |> 
+  filter(status != "Non-conclusive") |> 
+  ggplot(aes(x = reorder(labno, score),
+                                y = score)) +
+  geom_point(shape = 21, aes(fill = status)) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  labs(x = "Sample", y = "SeqOne GI score")
+
+
+
+```
+
+
+
+
 
 
