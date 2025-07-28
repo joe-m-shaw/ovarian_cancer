@@ -1,4 +1,4 @@
-# kintsuGI: joining ovarian cancer results
+# kintsuGI: joining ovarian cancer results <img src="kintsuGI_logo.png" align="right" height="200"/>
 
 ## Purpose
 
