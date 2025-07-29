@@ -73,7 +73,7 @@ gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
                                    "gi_glvar_joined.csv"),
                             col_types = list(
-                              glvar_classification = col_factor(
+                              glvar_headline_classification = col_factor(
                                 levels = c("Pathogenic",
                                                   "Likely pathogenic",
                                                   "Uncertain significance"))))
@@ -112,8 +112,8 @@ knitr::kable(tbl_gi_glvar)
 #| echo: FALSE
 
 variant_class_colours <- c("#FF3300",
-                               "#FF9900",
-                               "#CCCCCC")
+                           "#FF9900",
+                           "#CCCCCC")
 
 gi_glvar_plot <- gi_glvar_joined_conclusive |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
@@ -122,7 +122,7 @@ gi_glvar_plot <- gi_glvar_joined_conclusive |>
               size = 2,
               width = 0.1, 
               alpha = 0.8,
-              aes(fill = glvar_classification)) +
+              aes(fill = glvar_headline_classification)) +
   theme_bw() +
   scale_fill_manual(values = variant_class_colours) +
   labs(x = "Germline gene",
@@ -144,12 +144,12 @@ glvar_neg_gi <- gi_glvar_joined |>
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
   filter(status != "Non-conclusive") |> 
   filter(score < 0.5) |> 
-  filter(glvar_classification %in% c("Pathogenic", "Likely pathogenic")) |> 
-  filter(gl_gene %in% c("BRCA1", "BRCA2")) |> 
-  select(nhsno, surname, score, glvar_hgvs_description) |> 
-  mutate(score = round(score, 2))
-
-knitr::kable(glvar_neg_gi)
+  filter(glvar_seqv1_classification %in% c("Pathogenic", "Likely pathogenic")) |> 
+  filter(gl_gene %in% c("BRCA1", "BRCA2"))
+  
+knitr::kable(glvar_neg_gi |> 
+               select(nhsno, surname, score, glvar_seqv1_description) |> 
+               mutate(score = round(score, 2)))
 
 ```
 
@@ -165,10 +165,11 @@ gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
                                    "gi_tvar_joined.csv"),
                            col_types = list(
-                              tvar_classification = col_factor(
+                              tvar_headline_classification = col_factor(
                                 levels = c("Pathogenic",
                                            "Likely pathogenic",
                                            "Uncertain significance",
+                                           "Not reported",
                                            NA))))
 
 gi_tvar_joined_conclusive <- gi_tvar_joined |> 
@@ -197,10 +198,11 @@ gi_tvar_plot <- gi_tvar_joined_conclusive |>
   filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
   ggplot(aes(x = tvar_gene,
              y = score)) +
-  geom_jitter(shape = 21, aes(fill = tvar_classification),
+  geom_jitter(shape = 21, aes(fill = tvar_headline_classification),
               width = 0.2) +
   theme_bw() +
   scale_fill_manual(values = variant_class_colours) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
   labs(x = "Tumour gene", y = "SeqOne GI score",
        fill = "Variant classification",
        title = "GI results for patients with somatic BRCA1/2 variants")
@@ -208,25 +210,3 @@ gi_tvar_plot <- gi_tvar_joined_conclusive |>
 gi_tvar_plot
 
 ```
-
-```{r}
-
-gi_csv_cleaned_orpp |> 
-  filter(status != "Non-conclusive") |> 
-  ggplot(aes(x = reorder(labno, score),
-                                y = score)) +
-  geom_point(shape = 21, aes(fill = status)) +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  geom_hline(yintercept = 0.5, linetype = "dashed") +
-  labs(x = "Sample", y = "SeqOne GI score")
-
-
-
-```
-
-
-
-
-
-
