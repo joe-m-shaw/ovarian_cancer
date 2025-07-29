@@ -20,8 +20,7 @@ eval_hrd_lazy <- tbl(dbi_con, dbplyr::in_catalog(catalog = "MolecularDB",
 eval_hrd <- eval_hrd_lazy |> 
   # For some reason you have to select test_order_date first
   select(c(test_order_date, test_name, test_identifier, referral_number, 
-           nhsn_umber, 
-           test_name, field, data_value)) |> 
+           nhsn_umber, test_name, field, data_value, box)) |> 
   collect()
 
 # DNA Database tables -----------------------------------------------------
