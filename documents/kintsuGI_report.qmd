@@ -210,3 +210,40 @@ gi_tvar_plot <- gi_tvar_joined_conclusive |>
 gi_tvar_plot
 
 ```
+
+```{r}
+#| label: tbl-tvar-neg-hi
+#| echo: FALSE
+
+tvar_neg_gi <- gi_tvar_joined_conclusive |> 
+  filter(tvar_headline_result == "Reportable variant(s) detected") |>
+  filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
+  filter(score < 0.5) |> 
+  select(nhsno, surname, score, tvar_seqv1_description) |> 
+               mutate(score = round(score, 2))
+
+knitr::kable(tvar_neg_gi)
+
+```
+
+# Germline vs tumour testing
+
+```{r}
+#| label: glvar-vs-tvar
+#| include: FALSE
+
+glvar_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
+                                   "03_joined/",
+                                   "glvar_tvar_joined.csv"))
+
+glvar_tvar_brca <- glvar_tvar_joined |> 
+  filter(gl_gene %in% c("BRCA1", "BRCA2") &
+           glvar_seqv1_classification %in% c("Pathogenic",
+                                             "Likely pathogenic") &
+           tvar_headline_result == "Reportable variant(s) detected") |> 
+  select(nhsno, labno.x, labno.y, rno.x, rno.y, gl_gene, glvar_seqv1_description,
+         tvar_seqv1_description,
+         glvar_seqv1_classification,
+         tvar_seqv1_classification) 
+
+```
