@@ -54,6 +54,13 @@ gi_tvar_joined <- gi_csv_cleaned_orpp_for_join |>
              by = "nhsno",
              relationship = "one-to-one") 
 
+# Join tvar and glvar data ------------------------------------------------
+
+glvar_tvar_joined <- glvar_dnadb_igene_bound_orpp |> 
+  inner_join(tvar_dnadb_igene_bound_orpp,
+             by = "nhsno",
+             relationship = "one-to-one")
+
 # Export data -------------------------------------------------------------
 
 message("Exporting joined data")
@@ -67,3 +74,8 @@ write_csv(gi_tvar_joined,
           paste0(config::get("data_folderpath"),
                  "03_joined/",
                  "gi_tvar_joined.csv"))
+
+write_csv(glvar_tvar_joined,
+          paste0(config::get("data_folderpath"),
+                 "03_joined/",
+                 "glvar_tvar_joined.csv"))
