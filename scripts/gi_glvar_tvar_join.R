@@ -34,11 +34,7 @@ gi_csv_cleaned_orpp_for_join <- gi_csv_cleaned_orpp |>
 
 glvar_dnadb_igene_bound_orpp_for_join <- glvar_dnadb_igene_bound_orpp |> 
   rename(glvar_labno = labno,
-         glvar_genotype = genotype) |> 
-  select(nhsno, glvar_labno, glvar_headline_result,
-         glvar_genotype, glvar_hgvs_description,
-         glvar_classification, glvar_description, 
-         gl_snv_gene, gl_cnv_gene, gl_gene)
+         glvar_genotype = genotype)
 
 gi_glvar_joined <- gi_csv_cleaned_orpp_for_join |> 
   inner_join(glvar_dnadb_igene_bound_orpp_for_join,
@@ -51,10 +47,7 @@ message("Joining GI and tumour variant data")
 
 tvar_dnadb_igene_bound_orpp_for_join <- tvar_dnadb_igene_bound_orpp |> 
   rename(tvar_labno = labno,
-         tvar_genotype = genotype) |> 
-  select(nhsno, tvar_labno, tvar_headline_result,
-         tvar_genotype, tvar_hgvs_description, tvar_classification,
-         tvar_gene)
+         tvar_genotype = genotype)
 
 gi_tvar_joined <- gi_csv_cleaned_orpp_for_join |> 
   inner_join(tvar_dnadb_igene_bound_orpp_for_join,
