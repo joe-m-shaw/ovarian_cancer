@@ -32,36 +32,14 @@ tvar_dnadb_cleaned <- read_csv(file =
                                   labno = col_character()
                                 ))
 
-# Add patient identifiers to iGene data -----------------------------------
-
-message("Adding patient identifiers before binding iGene and DNA Database data")
-
-patient_id_df <- sample_tbl |> 
-  select(nhsno, i_gene_r_no, labno) |> 
-  collect() |> 
-  rename(rno = i_gene_r_no)
-
-patient_rno_nhsno_df <- patient_id_df |> 
-  select(-labno) |> 
-  filter(!duplicated(rno)) |> 
-  filter((!is.na(rno) &
-            !is.na(nhsno)))
+# Prepare iGene data for bind ---------------------------------------------
 
 glvar_igene_for_bind <- glvar_igene_extracted |>
   rename(rno = referral_number) |> 
   mutate(data_source = "igene",
          genotype = "",
          labno = "") |> 
-  left_join(patient_rno_nhsno_df, by = "rno",
-            relationship = "many-to-one") |> 
-  select(nhsno, labno, rno, data_source, 
-         glvar_headline_result, genotype, 
-         glvar_panel_coverage, glvar_reflex_test,
-         glvar_quality_score, glvar_zygosity,
-         glvar_hgvs_description, glvar_classification,
-         glvar_inheritance, glvar_genomic_coordinates,
-         glvar_incidental_finding, glvar_description,
-         glvar_copy_number_state, glvar_checker_comments)
+  relocate(nhsno, labno, rno, data_source, .before = test_order_date)
 
 stopifnot(nrow(glvar_igene_for_bind) == nrow(glvar_igene_extracted))
 
@@ -70,73 +48,99 @@ tvar_igene_for_bind <- tvar_igene_extracted |>
   mutate(data_source = "igene",
          genotype = "",
          labno = "") |> 
-  left_join(patient_rno_nhsno_df, by = "rno",
-            relationship = "many-to-one") |> 
-  select(nhsno, labno, rno, data_source, 
-         tvar_headline_result, genotype, 
-         tvar_reflex_test, tvar_hgvs_description, 
-         tvar_failed_hotspots, tvar_vaf_percent,
-         tvar_classification, tvar_quality_score,
-         tvar_genomic_coordinates, tvar_panel_coverage,
-         tvar_analyst_comments, tvar_checker_comments,
-         tvar_incidental_finding, tvar_evidence)
+  relocate(nhsno, labno, rno, data_source, .before = test_order_date)
 
 stopifnot(nrow(tvar_igene_for_bind) == nrow(tvar_igene_extracted))
 
-# Add patient identifiers to DNA database data ----------------------------
+# Prepare DNA Database germline data for bind -----------------------------
+
+patient_id_df <- sample_tbl |> 
+  select(i_gene_r_no, labno) |> 
+  collect() |> 
+  rename(rno = i_gene_r_no)
 
 glvar_dnadb_for_bind <- glvar_dnadb_cleaned |> 
-  select(-nhsno) |> 
-  mutate(data_source = "dnadb") |> 
   left_join(patient_id_df, by = "labno",
             relationship = "many-to-one") |> 
-  mutate(
-    glvar_panel_coverage = "", 
-    glvar_reflex_test = "",
-    glvar_quality_score = "",
-    glvar_zygosity = "",
-    glvar_inheritance = "", 
-    glvar_genomic_coordinates = "",
-    glvar_incidental_finding = "", 
-    glvar_copy_number_state = "", 
-    glvar_checker_comments = "") |> 
-  select(nhsno, labno, rno, data_source, 
-         glvar_headline_result, genotype, 
-         glvar_panel_coverage, glvar_reflex_test,
-         glvar_quality_score, glvar_zygosity,
-         glvar_hgvs_description, glvar_classification,
-         glvar_inheritance, glvar_genomic_coordinates,
-         glvar_incidental_finding, glvar_description,
-         glvar_copy_number_state, glvar_checker_comments)
+  mutate(data_source = "dnadb",
+         # Add empty columns for bind
+         test_order_date = NA,
+         test_identifier = NA,
+         glvar_seqv1_state = NA,
+         glvar_seqv1_genomic_coordinates = NA,
+         glvar_seqv1_evidence = NA,
+         glvar_reflex_test = NA,
+         glvar_analyst_comments = NA,
+         glvar_incidental_finding = NA,
+         glvar_panel_coverage = NA,
+         glvar_seqv1_inheritance = NA,
+         glvar_quality_score = NA,
+         glvar_checker_comments = NA,
+         glvar_icnv1_evidence = NA,
+         glvar_icnv1_state = NA,
+         glvar_icnv1_inheritance = NA,
+         glvar_icnv1_genomic_coordinates = NA
+         ) |> 
+  select(
+    # Identifiers
+    nhsno, labno, rno, 
+    # Test information
+    data_source, test_order_date, test_identifier, 
+    # Result information
+    glvar_seqv1_state, glvar_seqv1_genomic_coordinates, glvar_seqv1_evidence, 
+    glvar_reflex_test, glvar_analyst_comments, glvar_headline_result, 
+    glvar_incidental_finding, glvar_panel_coverage, 
+    glvar_seqv1_inheritance, glvar_seqv1_description, 
+    glvar_seqv1_classification, glvar_quality_score, 
+    glvar_checker_comments, glvar_icnv1_classification, 
+    glvar_icnv1_evidence, glvar_icnv1_description, glvar_icnv1_state, 
+    glvar_icnv1_inheritance, glvar_icnv1_genomic_coordinates, genotype)
 
 stopifnot(nrow(glvar_dnadb_for_bind) == nrow(glvar_dnadb_cleaned))
 
+# Prepare DNA Database tumour data for bind -------------------------------
+
 tvar_dnadb_for_bind <- tvar_dnadb_cleaned |> 
-  select(-nhsno) |> 
-  mutate(data_source = "dnadb") |> 
   left_join(patient_id_df, by = "labno",
             relationship = "many-to-one") |> 
-  mutate(
-    tvar_reflex_test = "",
-    genotype = "", 
-    tvar_reflex_test = "", 
-    tvar_failed_hotspots = "",
-    tvar_vaf_percent = "",
-    tvar_quality_score = "",
-    tvar_genomic_coordinates = "", 
-    tvar_panel_coverage = "",
-    tvar_analyst_comments = "", 
-    tvar_checker_comments = "",
-    tvar_incidental_finding = "", 
-    tvar_evidence = "") |> 
-  select(nhsno, labno, rno, data_source, 
-         tvar_headline_result, genotype, 
-         tvar_reflex_test, tvar_hgvs_description, 
-         tvar_failed_hotspots, tvar_vaf_percent,
-         tvar_classification, tvar_quality_score,
-         tvar_genomic_coordinates, tvar_panel_coverage,
-         tvar_analyst_comments, tvar_checker_comments,
-         tvar_incidental_finding, tvar_evidence)
+  mutate(data_source = "dnadb",
+         test_order_date = NA, 
+         test_identifier = NA, 
+         tvar_analyst_comments = NA, 
+         tvar_failed_hotspots = NA, 
+         tvar_panel_coverage = NA, 
+         tvar_reflex_test = NA, 
+         tvar_quality_score = NA, 
+         tvar_seqv1_genomic_coordinates = NA, 
+         tvar_seqv1_state = NA, 
+         tvar_checker_comments = NA, 
+         tvar_icnv1_classification = NA, 
+         tvar_icnv1_description = NA, 
+         tvar_icnv1_state = NA, 
+         tvar_icnv1_genomic_coordinates = NA, 
+         tvar_seqv2_description = NA, 
+         tvar_seqv2_classification = NA, 
+         tvar_seqv2_state = NA, 
+         tvar_seqv2_genomic_coordinates = NA, 
+         tvar_incidental_finding = NA, 
+         tvar_seqv1_evidence = NA,
+         tvar_sv1_classification = NA,
+         tvar_sv1_evidence = NA,          
+         tvar_sv1_state = NA,
+         tvar_sv1_description = NA,       
+         tvar_sv1_genomic_coordinates = NA) |> 
+  select(nhsno, labno, rno, data_source, test_order_date, 
+         test_identifier, tvar_panel_coverage, tvar_failed_hotspots, 
+         tvar_quality_score, tvar_headline_result, tvar_reflex_test, 
+         tvar_analyst_comments, tvar_checker_comments, tvar_seqv2_state, 
+         tvar_seqv1_state, tvar_seqv1_classification, tvar_seqv2_description,
+         tvar_seqv2_classification, tvar_seqv1_description, 
+         tvar_seqv1_genomic_coordinates, tvar_icnv1_genomic_coordinates, 
+         tvar_icnv1_description, tvar_icnv1_classification, 
+         tvar_icnv1_state, tvar_incidental_finding, 
+         tvar_seqv2_genomic_coordinates, tvar_seqv1_evidence, 
+         tvar_sv1_classification, tvar_sv1_evidence, tvar_sv1_state, 
+         tvar_sv1_description, tvar_sv1_genomic_coordinates, genotype)
 
 stopifnot(nrow(tvar_dnadb_for_bind) == nrow(tvar_dnadb_cleaned))
 
@@ -157,26 +161,32 @@ gl_genes <- c("BRCA1", "BRCA2", "BRIP1", "PALB2", "RAD51D",
 gl_gene_regex <- paste0(".*(", paste0(gl_genes, collapse = "|"), ").*")
 
 glvar_dnadb_igene_bound_genes <- glvar_dnadb_igene_bound |> 
-  mutate(gl_snv_gene = str_extract(string = glvar_hgvs_description,
+  mutate(gl_snv_gene = str_extract(string = glvar_seqv1_description,
                                  pattern = gl_gene_regex,
                                  group = 1),
-       gl_cnv_gene = str_extract(string = glvar_description,
+       gl_cnv_gene = str_extract(string = glvar_icnv1_description,
                                  pattern = gl_gene_regex,
                                  group = 1),
        gl_gene = case_when(
          is.na(gl_snv_gene) & !is.na(gl_cnv_gene) ~gl_cnv_gene,
          !is.na(gl_snv_gene) & is.na(gl_cnv_gene) ~gl_snv_gene
        ),
-       glvar_classification = case_when(
+       glvar_seqv1_classification = case_when(
          # Likely pathogenic reduced penetrance
-         glvar_hgvs_description == "NM_000059.3(BRCA2):c.9302T>G p.(Leu3101Arg)" ~"Likely pathogenic",
-         TRUE ~glvar_classification
-       ))
+         glvar_seqv1_description == "NM_000059.3(BRCA2):c.9302T>G p.(Leu3101Arg)" ~"Likely pathogenic",
+         TRUE ~glvar_seqv1_classification
+       ),
+       # Add column to summarise SNV and CNV classifications
+       glvar_headline_classification = case_when(
+         !is.na(glvar_seqv1_classification) ~glvar_seqv1_classification,
+         !is.na(glvar_icnv1_classification) ~glvar_icnv1_classification,
+         TRUE ~NA))
 
 samples_with_gl_variants <- glvar_dnadb_igene_bound_genes |> 
   filter(glvar_headline_result == "Reportable variant(s) detected")
 
 stopifnot(anyNA(samples_with_gl_variants$gl_gene) == FALSE)
+stopifnot(anyNA(samples_with_gl_variants$glvar_headline_classification) == FALSE)
 
 # Filter germline data to one result per patient --------------------------
 
@@ -217,18 +227,23 @@ tvar_dnadb_igene_bound <- rbind(tvar_dnadb_for_bind,
 
 message("Annotating tumour variant gene information")
 
-tvar_genes <- c("BRCA1", "BRCA2", "KRAS", "BRAF")
+tvar_genes <- c("BRCA1", "BRCA2", "KRAS", "BRAF", "ERBB2")
 
 tvar_gene_regex <- paste0(".*(", paste0(tvar_genes, collapse = "|"), ").*")
 
 tvar_dnadb_igene_bound_genes <- tvar_dnadb_igene_bound |> 
   mutate(
-    tvar_gene = str_extract(string = tvar_hgvs_description,
+    tvar_gene = str_extract(string = tvar_seqv1_description,
                             pattern = tvar_gene_regex,
-                            group = 1))
+                            group = 1),
+    tvar_headline_classification = case_when(
+      !is.na(tvar_seqv1_classification) ~tvar_seqv1_classification,
+      !is.na(tvar_icnv1_classification) ~tvar_icnv1_classification,
+      TRUE ~NA
+    ))
 
 samples_with_t_variants <- tvar_dnadb_igene_bound_genes |> 
-  filter(!is.na(tvar_hgvs_description))
+  filter(!is.na(tvar_seqv1_description))
 
 stopifnot(anyNA(samples_with_t_variants$tvar_gene) == FALSE)
 
