@@ -14,60 +14,15 @@ library(janitor)
 
 ```
 
-# GI sample results
-
-Here are the results for the number of samples tested with the SeqOne pipeline, one result per sample.
-
 ```{r}
-#| label: gi-sample-results
-#| echo: FALSE
-#| message: FALSE
+#| label: load-data
+#| include: FALSE
 
 gi_csv_cleaned_orps <- read_csv(paste0(config::get("data_folderpath"),
                                        "02_cleaned/gi_csv_cleaned_orps.csv"))
 
-tbl_gi_orps <- gi_csv_cleaned_orps |> 
-  group_by(status) |> 
-  count() |> 
-  rename("Number of samples" = n,
-         "GI status" = status) |> 
-  adorn_totals()
-
-knitr::kable(tbl_gi_orps)
-
-```
-
-# GI patient results
-
-Here are the results for the number of patients tested with the SeqOne pipeline, one result per patient.
-
-```{r}
-#| label: gi-patient-results
-#| echo: FALSE
-#| message: FALSE
-
 gi_csv_cleaned_orpp <- read_csv(paste0(config::get("data_folderpath"),
                                        "02_cleaned/gi_csv_cleaned_orpp.csv"))
-
-tbl_gi_orpp <- gi_csv_cleaned_orpp |> 
-  group_by(status) |> 
-  count() |> 
-  rename("Number of patients" = n,
-         "GI status" = status) |> 
-  adorn_totals()
-
-knitr::kable(tbl_gi_orpp)
-
-```
-
-{{< pagebreak >}}
-
-# Germline results
-
-```{r}
-#| label: load-data
-#| include: FALSE
-#| message: FALSE
 
 gi_glvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
@@ -82,25 +37,75 @@ stopifnot(anyNA(gi_glvar_joined$glvar_headline_result) == FALSE)
 
 stopifnot(anyDuplicated(gi_glvar_joined$nhsno) == 0)
 
+glvar_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
+                                   "03_joined/",
+                                   "glvar_tvar_joined.csv"))
+
+gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
+                                   "03_joined/",
+                                   "gi_tvar_joined.csv"),
+                           col_types = list(
+                              tvar_headline_classification = col_factor(
+                                levels = c("Pathogenic",
+                                           "Likely pathogenic",
+                                           "Uncertain significance",
+                                           "Not reported",
+                                           NA))))
+
+```
+
+```{r}
+#| label: tbl-gi-results
+#| echo: FALSE
+#| tbl-cap: "GI results"
+
+tbl_gi_orps <- gi_csv_cleaned_orps |> 
+  group_by(status) |> 
+  count() |> 
+  rename("Samples" = n)
+
+tbl_gi_orpp <- gi_csv_cleaned_orpp |> 
+  group_by(status) |> 
+  count() |> 
+  rename("Patients" = n)
+
+tbl_gi_results <- tbl_gi_orps |> 
+  left_join(tbl_gi_orpp, by = "status") |> 
+  rename("GI status" = status) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_results)
+
+```
+
+
+```{r}
+#| label: conclusive-results
+#| include: FALSE
+
 gi_glvar_joined_conclusive <- gi_glvar_joined |> 
   filter(status != "Non-conclusive" &
            glvar_headline_result %in% c("No reportable variant(s) detected",
                                         "Reportable variant(s) detected"))
 
-```
+gi_tvar_joined_conclusive <- gi_tvar_joined |> 
+  filter(status != "Non-conclusive" &
+           tvar_headline_result %in% c("No reportable variant(s) detected",
+                                        "Reportable variant(s) detected"))
 
-There are the results for patients with conclusive results from SeqOne genomic instability (GI) testing and germline variant testing.
+```
 
 ```{r}
 #| label: tbl-gi-glvar
 #| echo: FALSE
+#| tbl-cap: "GI results and germline testing results"
 
 tbl_gi_glvar <- gi_glvar_joined_conclusive |>
   group_by(status, glvar_headline_result) |> 
   count() |> 
-  rename("SeqOne GI status" = status,
+  rename("GI status" = status,
          "Germline result" = glvar_headline_result,
-         "Number of patients" = n) |> 
+         "Patients" = n) |> 
   adorn_totals()
 
 knitr::kable(tbl_gi_glvar)
@@ -108,8 +113,26 @@ knitr::kable(tbl_gi_glvar)
 ```
 
 ```{r}
-#| label: gi-gl-results-variants
+#| label: tbl-gi-tvar
 #| echo: FALSE
+
+tbl_gi_tvar <- gi_tvar_joined_conclusive |> 
+  group_by(status, tvar_headline_result) |> 
+  count() |> 
+  rename("Patients" = n,
+         "Tumour result" = tvar_headline_result,
+         "GI status" = status) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_tvar)
+
+```
+
+
+```{r}
+#| label: fig-gi-gl-results-variants
+#| echo: FALSE
+#| fig-cap: "GI results for patients with reportable germline variants"
 
 variant_class_colours <- c("#FF3300",
                            "#FF9900",
@@ -127,18 +150,38 @@ gi_glvar_plot <- gi_glvar_joined_conclusive |>
   scale_fill_manual(values = variant_class_colours) +
   labs(x = "Germline gene",
        fill = "Variant classification",
-       y = "SeqOne GI score",
-       title = "GI results for patients with reportable germline variants")
+       y = "SeqOne GI score")
 
 gi_glvar_plot
 
 ```
 
-## Patients with germline BRCA variants and negative GI scores
+```{r}
+#| label: fig-gi-t-results-variants
+#| echo: FALSE
+#| fig-cap: "GI results for patients with somatic BRCA1/2 variants"
+
+gi_tvar_plot <- gi_tvar_joined_conclusive |> 
+  filter(tvar_headline_result == "Reportable variant(s) detected") |>
+  filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
+  ggplot(aes(x = tvar_gene,
+             y = score)) +
+  geom_jitter(shape = 21, aes(fill = tvar_headline_classification),
+              width = 0.2) +
+  theme_bw() +
+  scale_fill_manual(values = variant_class_colours) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  labs(x = "Tumour gene", y = "SeqOne GI score",
+       fill = "Variant classification")
+
+gi_tvar_plot
+
+```
 
 ```{r}
-#| label: gi-neg-gl-pos
+#| label: tbl-gi-neg-gl-pos
 #| echo: FALSE
+#| tbl-cap: "GI negative samples with germline BRCA variants"
 
 glvar_neg_gi <- gi_glvar_joined |> 
   filter(glvar_headline_result == "Reportable variant(s) detected") |> 
@@ -153,67 +196,10 @@ knitr::kable(glvar_neg_gi |>
 
 ```
 
-{{< pagebreak >}}
-
-# Tumour variant results
-
-```{r}
-#| label: tbl-gi-tvar
-#| echo: FALSE
-
-gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
-                                   "03_joined/",
-                                   "gi_tvar_joined.csv"),
-                           col_types = list(
-                              tvar_headline_classification = col_factor(
-                                levels = c("Pathogenic",
-                                           "Likely pathogenic",
-                                           "Uncertain significance",
-                                           "Not reported",
-                                           NA))))
-
-gi_tvar_joined_conclusive <- gi_tvar_joined |> 
-  filter(status != "Non-conclusive" &
-           tvar_headline_result %in% c("No reportable variant(s) detected",
-                                        "Reportable variant(s) detected"))
-
-tbl_gi_tvar <- gi_tvar_joined_conclusive |> 
-  group_by(status, tvar_headline_result) |> 
-  count() |> 
-  rename("Number of patients" = n,
-         "Tumour result" = tvar_headline_result,
-         "SeqOne GI status" = status) |> 
-  adorn_totals()
-
-knitr::kable(tbl_gi_tvar)
-
-```
-
-```{r}
-#| label: gi-t-results-variants
-#| echo: FALSE
-
-gi_tvar_plot <- gi_tvar_joined_conclusive |> 
-  filter(tvar_headline_result == "Reportable variant(s) detected") |>
-  filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
-  ggplot(aes(x = tvar_gene,
-             y = score)) +
-  geom_jitter(shape = 21, aes(fill = tvar_headline_classification),
-              width = 0.2) +
-  theme_bw() +
-  scale_fill_manual(values = variant_class_colours) +
-  geom_hline(yintercept = 0.5, linetype = "dashed") +
-  labs(x = "Tumour gene", y = "SeqOne GI score",
-       fill = "Variant classification",
-       title = "GI results for patients with somatic BRCA1/2 variants")
-
-gi_tvar_plot
-
-```
-
 ```{r}
 #| label: tbl-tvar-neg-hi
 #| echo: FALSE
+#| tbl-cap: "GI negative samples with tumour BRCA variants"
 
 tvar_neg_gi <- gi_tvar_joined_conclusive |> 
   filter(tvar_headline_result == "Reportable variant(s) detected") |>
@@ -226,15 +212,9 @@ knitr::kable(tvar_neg_gi)
 
 ```
 
-# Germline vs tumour testing
-
 ```{r}
 #| label: glvar-vs-tvar
 #| include: FALSE
-
-glvar_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
-                                   "03_joined/",
-                                   "glvar_tvar_joined.csv"))
 
 glvar_tvar_brca <- glvar_tvar_joined |> 
   filter(gl_gene %in% c("BRCA1", "BRCA2") &
