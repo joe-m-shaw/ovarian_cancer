@@ -18,7 +18,9 @@ This document is a summation of the various issues I've encountered working with
 
 -   DNA Database and iGene have different names for the same variable, such as the R number ("i_gene_r_no" on DNA Database and "referral" on iGene).
 
--   The DNA Database labno and iGene rno are not uniquely aligned: some rnos have multiple labnos.
+-   Cross-identifying samples between DNA Database and iGene is complicated.
+    In theory, every DNA Database lab number (labno) should be linked to only one iGene D number (dno).
+    However, in practice there are situations where this may not be true.
 
 # DNA Database
 
@@ -49,8 +51,11 @@ This document is a summation of the various issues I've encountered working with
 # SeqOne GI CSVs
 
 -   Files are saved in a separate folder for every worksheet.
+    Sometimes there are subfolders within the worksheet folder.
 
 -   The naming convention for SeqOne GI csv files changed over time.
+
+-   The format of the date column in SeqOne GI csv files has changed over time.
 
 -   CSV files were not exported for validation samples, only PDFs were exported.
 
