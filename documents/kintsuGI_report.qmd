@@ -1,6 +1,8 @@
 ---
 title: "KintsuGI Report"
 author: "Joe Shaw (CS20980)"
+date: today
+date-format: "DD/MM/YYYY"
 format: pdf
 fig-cap-location: top
 editor: visual
@@ -80,6 +82,32 @@ knitr::kable(tbl_gi_results)
 ```
 
 ```{r}
+#| label: tbl-gi-tvar-glvar-all-results
+#| tbl-cap: "All testing results, including fails and inconclusive results"
+#| echo: FALSE
+
+glvar_all_results <- gi_glvar_joined |> 
+  group_by(data_source) |> 
+  count() |> 
+  rename("Patients with GI and germline NGS results" = n)
+
+tvar_all_results <- gi_tvar_joined |> 
+  group_by(data_source) |> 
+  count() |> 
+  rename("Patients with GI and tumour NGS results" = n)
+
+tbl_gi_glvar_tvar_all <- glvar_all_results |> 
+  left_join(tvar_all_results, by = "data_source") |> 
+  rename("NGS result data source" = data_source) |> 
+  adorn_totals()
+
+knitr::kable(tbl_gi_glvar_tvar_all)
+
+```
+
+
+
+```{r}
 #| label: conclusive-results
 #| include: FALSE
 
@@ -100,7 +128,7 @@ gi_tvar_joined_conclusive <- gi_tvar_joined |>
 #| echo: FALSE
 #| tbl-cap: "GI results and germline testing results"
 
-tbl_gi_glvar <- gi_glvar_joined_conclusive |>
+tbl_gi_glvar <- gi_glvar_joined |>
   group_by(status, glvar_headline_result) |> 
   count() |> 
   rename("GI status" = status,
@@ -117,7 +145,7 @@ knitr::kable(tbl_gi_glvar)
 #| tbl-cap: "GI results and tumour testing results"
 #| echo: FALSE
 
-tbl_gi_tvar <- gi_tvar_joined_conclusive |> 
+tbl_gi_tvar <- gi_tvar_joined |> 
   group_by(status, tvar_headline_result) |> 
   count() |> 
   rename("Patients" = n,
@@ -128,6 +156,10 @@ tbl_gi_tvar <- gi_tvar_joined_conclusive |>
 knitr::kable(tbl_gi_tvar)
 
 ```
+
+
+
+
 
 ```{r}
 #| label: fig-gi-gl-results-variants
