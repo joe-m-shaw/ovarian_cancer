@@ -28,4 +28,10 @@ rm(list=ls())
 
 source(here::here("scripts/gi_glvar_tvar_join.R"))
 
+rm(list=ls())
+
+message("Data processing complete. Rendering kintsuGI_report.qmd")
+
+quarto::quarto_render("documents/kintsuGI_report.qmd")
+
 message("kintsuGI pipeline finished")
