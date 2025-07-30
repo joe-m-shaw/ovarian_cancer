@@ -73,7 +73,7 @@ pansolid_test_strings <- unique(grep(pattern = "seq\\span",
 
 tvar_dnadb_results <- dnadb_results |> 
   filter(test %in% c(pansolid_test_strings,
-                     "NGS Pansolid")) |> 
+                     "NGS Pansolid", "NGS PanSolid QIAseq")) |> 
   left_join(labno_df, by = "labno") |> 
   relocate(nhsno)
 
