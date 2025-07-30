@@ -33,7 +33,8 @@ This document is a summation of the various issues I've encountered working with
 
 -   NHS numbers may not have been entered on DNA Database, which could lead to results being missed when joining results using an NHS number.
 
--   The "description" field for worksheets is free-type, so there are different strings identifying SeqOne GI worksheets.
+-   The "description" field for worksheets is free-type, so there are different strings identifying worksheets.
+    Examples: "NGS DNA QIAseq PanSolid", "QIAseq PanSolid" , "NGS DNA QIASeq PanSolid" etc.
 
 -   DNA Database has different names for the same variable in different tables.
 
@@ -47,6 +48,8 @@ This document is a summation of the various issues I've encountered working with
 # iGene
 
 -   There is no record of the lab number (DNA number) in iGene.
+-   The panel name for ovarian cancer testing has changed over time: "PANEL: M2_tBRCA_PS", "PANEL: M2_tBRCA_PS v2.a" and "PANEL: M2_tBRCA_PS v2.b".
+-   The majority of patients are tested under M2, but some may be tested under other M codes, such as "M119_PAEDEXT_PS" (example: 24032717).
 
 # SeqOne GI CSVs
 
@@ -65,3 +68,7 @@ This document is a summation of the various issues I've encountered working with
 -   The version of SomaHRD changed over time.
 
 -   Scientists may make decisions about the data which are not reflected in the csv file - for example a sample may have acceptable quality metrics and a score of 0.49 (GI negative), but the scientist may use their professional judgement to say that this result is inconclusive because the score is so borderline.
+
+# Clinical Notes
+
+-   Sometimes only GI testing will be requested for a tumour sample, without NGS BRCA testing also being requested (example: 24054073).
