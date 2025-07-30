@@ -2,6 +2,7 @@
 title: "KintsuGI Report"
 author: "Joe Shaw (CS20980)"
 format: pdf
+fig-cap-location: top
 editor: visual
 ---
 
@@ -78,7 +79,6 @@ knitr::kable(tbl_gi_results)
 
 ```
 
-
 ```{r}
 #| label: conclusive-results
 #| include: FALSE
@@ -114,6 +114,7 @@ knitr::kable(tbl_gi_glvar)
 
 ```{r}
 #| label: tbl-gi-tvar
+#| tbl-cap: "GI results and tumour testing results"
 #| echo: FALSE
 
 tbl_gi_tvar <- gi_tvar_joined_conclusive |> 
@@ -127,7 +128,6 @@ tbl_gi_tvar <- gi_tvar_joined_conclusive |>
 knitr::kable(tbl_gi_tvar)
 
 ```
-
 
 ```{r}
 #| label: fig-gi-gl-results-variants
