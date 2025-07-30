@@ -9,12 +9,12 @@ This document is a summation of the various issues I've encountered working with
 
 # General issues
 
--   Samples may have been tested multiple times on multiple different tests with results entered on different databases.
+-   I am interested in the results of 3 different tests: genomic instability (GI) testing, tumour variant testing and germline variant testing.
+    Since December 2023, the results for these different tests have been saved across two different databases: DNA Database and iGene.
 
--   The data is multi-dimensional.
-    An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
+-   Results for these tests stopped being entered onto DNA Database and began being entered onto iGene at different times.
 
--   Single nucleotide variants and copy number variants are stored in a separate format.
+-   Samples may also have been tested multiple times on multiple different tests with results entered on different databases.
 
 -   DNA Database and iGene have different names for the same variable, such as the R number ("i_gene_r_no" on DNA Database and "referral" on iGene).
 
@@ -22,36 +22,9 @@ This document is a summation of the various issues I've encountered working with
     In theory, every DNA Database lab number (labno) should be linked to only one iGene D number (dno).
     However, in practice there are situations where this may not be true.
 
-# DNA Database
+-   Variants are recorded in different places and in different ways: example R24-1EPT - for the germline sample the VUS is recorded in the seqv1_description box on iGene, but for the tumour sample the same variant is recorded in the comments box.
 
--   DNA database does not have a "headline result" field.
-    As such, there is no way to know what result was included in the final report.
-    For example, the "genotype" field may have a variant in which was classified as being of uncertain significance, and so a result of "no pathogenic variants" was issued.
-
--   DNA Database has no "patient" table.
-    This means some sample entries do not have NHS numbers.
-
--   NHS numbers may not have been entered on DNA Database, which could lead to results being missed when joining results using an NHS number.
-
--   The "description" field for worksheets is free-type, so there are different strings identifying worksheets.
-    Examples: "NGS DNA QIAseq PanSolid", "QIAseq PanSolid" , "NGS DNA QIASeq PanSolid" etc.
-
--   DNA Database has different names for the same variable in different tables.
-
--   The "genotype" field has SNV and CNV results separated by a semicolon.
-    But there are cases where 2 SNVs are present (example: 24030433).
-
--   Analysis can fail for a sample, or for only SNVs or only CNVs.
-
--   Samples may have been analysed on two different panels on the PanSolid enrichment (example: 23060079).
-
-# iGene
-
--   There is no record of the lab number (DNA number) in iGene.
--   The panel name for ovarian cancer testing has changed over time: "PANEL: M2_tBRCA_PS", "PANEL: M2_tBRCA_PS v2.a" and "PANEL: M2_tBRCA_PS v2.b".
--   The majority of patients are tested under M2, but some may be tested under other M codes, such as "M119_PAEDEXT_PS" (example: 24032717).
-
-# SeqOne GI CSVs
+# SeqOne Genomic Instability Testing
 
 -   Files are saved in a separate folder for every worksheet.
     Sometimes there are subfolders within the worksheet folder.
@@ -68,6 +41,45 @@ This document is a summation of the various issues I've encountered working with
 -   The version of SomaHRD changed over time.
 
 -   Scientists may make decisions about the data which are not reflected in the csv file - for example a sample may have acceptable quality metrics and a score of 0.49 (GI negative), but the scientist may use their professional judgement to say that this result is inconclusive because the score is so borderline.
+
+-   Single nucleotide variants and copy number variants are stored in a separate format.
+
+# Tumour Variant Testing
+
+-   The data is multi-dimensional.
+    An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
+
+# DNA Database
+
+-   DNA database does not have a "headline result" field.
+    As such, there is no way to know what result was included in the final report.
+    For example, the "genotype" field may have a variant in which was classified as being of uncertain significance, and so a result of "no pathogenic variants" was issued.
+
+-   DNA Database has no "patient" table.
+    This means some sample entries do not have NHS numbers.
+
+-   If NHS numbers were not entered onto DNA Database, this would lead to results being missed when joining results using an NHS number.
+
+-   The "description" field for worksheets is free-type, so there are different strings identifying worksheets.
+    Examples for tumour testing: "NGS DNA QIAseq PanSolid", "QIAseq PanSolid" , "NGS DNA QIASeq PanSolid" etc.
+    Examples for SeqOne GI testing: "HRD_SeqOne", "sWGS HRD_SeqOne, Due 20/5/2025", "SSXT HS2 sWGS HRD_SeqONe" etc.
+    This makes it complicated to identify all the worksheets for a particular test.
+
+-   DNA Database has different names for the same variable in different tables.
+    Example: the "PCR Records" table uses "sample" to describe the 8 digit number identifier, whilst the "Samples" table uses "labno".
+
+-   The "genotype" field has SNV and CNV results separated by a semicolon.
+    But there are cases where 2 SNVs are present (example: 24030433).
+
+-   Analysis can fail for a sample, or for only SNVs or only CNVs.
+
+-   Samples may have been analysed on two different panels on the PanSolid enrichment (example: 23060079).
+
+# iGene
+
+-   There is no record of the lab number (DNA number) in iGene.
+-   The panel name for ovarian cancer testing has changed over time: "PANEL: M2_tBRCA_PS", "PANEL: M2_tBRCA_PS v2.a" and "PANEL: M2_tBRCA_PS v2.b".
+-   The majority of patients are tested under M2, but some may be tested under other M codes, such as "M119_PAEDEXT_PS" (example: 24032717).
 
 # Clinical Notes
 
