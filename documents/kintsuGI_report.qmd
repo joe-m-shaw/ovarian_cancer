@@ -159,10 +159,6 @@ knitr::kable(tbl_gi_tvar)
 
 ```
 
-
-
-
-
 ```{r}
 #| label: fig-gi-gl-results-variants
 #| echo: FALSE
@@ -259,5 +255,43 @@ glvar_tvar_brca <- glvar_tvar_joined |>
          tvar_seqv1_description,
          glvar_seqv1_classification,
          tvar_seqv1_classification) 
+
+```
+
+```{r}
+#| label: fig-gi-glvar-histogram
+#| echo: FALSE
+#| fig-cap: "GI score histogram stratified by germline BRCA status"
+
+gi_glvar_histogram <- gi_glvar_joined_conclusive |> 
+  filter(gl_gene %in% c("BRCA1", "BRCA2", NA)) |> 
+  ggplot(aes(x = score, y = )) +
+  geom_histogram(binwidth = 0.01) +
+  facet_wrap(~glvar_headline_result, nrow = 2) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(x = "SeqOne GI score", y = "Number of patients")
+
+gi_glvar_histogram
+
+```
+
+```{r}
+#| label: fig-gi-tvar-histogram
+#| echo: FALSE
+#| fig-cap: "GI score histogram stratified by tumour BRCA status"
+
+gi_tvar_histogram <- gi_tvar_joined_conclusive |> 
+  filter(tvar_gene %in% c("BRCA1", "BRCA2", NA)) |> 
+  ggplot(aes(x = score, y = )) +
+  geom_histogram(binwidth = 0.01) +
+  facet_wrap(~tvar_headline_result, nrow = 2) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(x = "SeqOne GI score", y = "Number of patients",
+       title = "GI score and tumour BRCA1/2 results",
+       fill = "")
+
+gi_tvar_histogram
 
 ```
