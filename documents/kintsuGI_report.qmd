@@ -64,12 +64,14 @@ gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
 
 tbl_gi_orps <- gi_csv_cleaned_orps |> 
   group_by(status) |> 
-  count() |> 
+  summarise(n = n()) |> 
+  mutate("Percentage samples (%)" = (round((n / sum(n))*100, 1))) |> 
   rename("Samples" = n)
 
 tbl_gi_orpp <- gi_csv_cleaned_orpp |> 
   group_by(status) |> 
-  count() |> 
+  summarise(n = n()) |> 
+  mutate("Percentage patients (%)" = (round((n / sum(n))*100, 1))) |> 
   rename("Patients" = n)
 
 tbl_gi_results <- tbl_gi_orps |> 
