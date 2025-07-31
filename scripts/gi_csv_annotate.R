@@ -150,6 +150,11 @@ stopifnot(nrow(gi_csv_cleaned_orps[gi_csv_cleaned_orps$labno == "24045060" &
 
 message("Exporting cleaned GI csv data")
 
+write_csv(gi_csv_collated_validation_info,
+          paste0(config::get("data_folderpath"),
+                 "02_cleaned/",
+                 "gi_csv_cleaned.csv"))
+
 write_csv(gi_csv_cleaned_orpp,
           paste0(config::get("data_folderpath"),
                  "02_cleaned/",
@@ -159,3 +164,4 @@ write_csv(gi_csv_cleaned_orps,
           paste0(config::get("data_folderpath"),
                  "02_cleaned/",
                  "gi_csv_cleaned_orps.csv"))
+

@@ -46,8 +46,7 @@ This document is a summation of the various issues I've encountered working with
 
 # Tumour Variant Testing
 
--   The data is multi-dimensional.
-    An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
+-   The data is multi-dimensional. An NGS assay sequencing thousands of genes is compressed into a single string ("variant detected", "no variant detected") which means you loose lots of data when you join tables together.
 
 # DNA Database
 
