@@ -51,15 +51,27 @@ glvar_igene <- widen_by_test(df = eval_hrd,
 
 stopifnot(ncol(glvar_igene) == 23)
 
+message(paste0(nrow(glvar_igene), " germline tests identified for these panels: ",
+               "PANEL: R207.1 - Inherited ovarian cancer (without breast cancer) v4.0 (ICP)"))
+
 tvar_igene <- widen_by_test(df = eval_hrd,
                              test_vector = c("PANEL: M2_tBRCA_PS",
                                              "PANEL: M2_tBRCA_PS v2.a",
                                              "PANEL: M2_tBRCA_PS v2.b"), 
                              prefix_string = "tvar")
 
+message(paste0(nrow(tvar_igene), " tumour tests identified for these panels: ", 
+               paste(c("PANEL: M2_tBRCA_PS",
+                       "PANEL: M2_tBRCA_PS v2.a",
+                       "PANEL: M2_tBRCA_PS v2.b"),
+                     collapse = ", ")))
+
 gi_igene <- widen_by_test(df = eval_hrd,
                           test_vector = c("PANEL: M2.5 - SeqOne HRD Status"), 
                           prefix_string = "gi")
+
+message(paste0(nrow(gi_igene), " SeqOne GI tests identified for these panels: ",
+               "PANEL: M2.5 - SeqOne HRD Status"))
 
 # Perform checks ----------------------------------------------------------
 
@@ -86,11 +98,23 @@ message(paste0("There are ",
 
 # Remove entries without headline results ---------------------------------
 
+glvar_igene_na <- glvar_igene |> 
+  filter(is.na(glvar_headline_result))
+
 glvar_igene_no_na <- glvar_igene |> 
   filter(!is.na(glvar_headline_result))
 
+message(paste0(nrow(glvar_igene_na),
+               " germline entries with no headline result were removed."))
+
+tvar_igene_na <- tvar_igene |> 
+  filter(is.na(tvar_headline_result))
+
 tvar_igene_no_na <- tvar_igene |> 
   filter(!is.na(tvar_headline_result))
+
+message(paste0(nrow(tvar_igene_na),
+               " tumour entries with no headline result were removed."))
 
 # Check dates of entries --------------------------------------------------
 
