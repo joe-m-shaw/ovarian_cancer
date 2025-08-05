@@ -1,3 +1,5 @@
+# Clean results from DNA Database
+
 library(tidyverse)
 
 # Load initial data -------------------------------------------------------
@@ -8,20 +10,30 @@ glvar_dnadb_extracted <- read_csv(
          "glvar_dnadb_extracted.csv"),
   show_col_types = FALSE)
 
+stopifnot(ncol(glvar_dnadb_extracted) == 8)
+stopifnot(nrow(glvar_dnadb_extracted) != 0)
+
 tvar_dnadb_extracted <- read_csv(
   paste0(config::get("data_folderpath"),
          "01_initial/",
          "tvar_dnadb_extracted.csv"),
   show_col_types = FALSE)
 
-# Annotate variants in germline results -----------------------------------
+stopifnot(ncol(tvar_dnadb_extracted) == 8)
+stopifnot(nrow(tvar_dnadb_extracted) != 0)
 
-message("Adding variant classifications to germline variant DNA database results")
+# Annotate variants in germline results -----------------------------------
 
 glvar_classifications <- read_csv(paste0(config::get("data_folderpath"),
                                          "01_initial/",
                                          "glvar_classifications.csv"),
                                   show_col_types = FALSE)
+
+stopifnot(anyDuplicated(glvar_classifications$glvar_seqv1_description) == 0)
+
+message("Adding ",
+        nrow(glvar_classifications),
+        " variant classifications to germline variant DNA database results")
 
 glvar_dnadb_classifications <- glvar_dnadb_extracted |> 
   mutate(
@@ -71,6 +83,8 @@ stopifnot(anyNA(samples_with_gl_cn_variants$glvar_icnv1_classification) == FALSE
 
 # Add headline to germline results ----------------------------------------
 
+message("Adding headline results to germline variant DNA Database results")
+
 glvar_dnadb_cleaned <- glvar_dnadb_classifications |> 
   mutate(glvar_headline_result = case_when(
     genotype %in% c("No pathogenic variant identified; No relevant CNV identified",
@@ -79,7 +93,7 @@ glvar_dnadb_cleaned <- glvar_dnadb_classifications |>
     glvar_seqv1_classification %in% c("Pathogenic", "Likely pathogenic",
                                 "Uncertain significance") ~"Reportable variant(s) detected",
     glvar_seqv1_classification == "Not reported" ~"No reportable variant(s) detected",
-    !is.na(glvar_icnv1_classification) ~"Reportable variant(s) detected",
+    glvar_icnv1_classification == "Pathogenic" ~"Reportable variant(s) detected",
     # Specify headline for 18028742
     (glvar_snv_result == "No pathogenic variant identified" &
       glvar_cnv_result == " No pathogenic variant identified") ~"No reportable variant(s) detected"))
@@ -88,13 +102,16 @@ stopifnot(anyNA(glvar_dnadb_cleaned$glvar_headline_result) == FALSE)
 
 # Add classification to tumour variant results ----------------------------
 
-message("Adding classifications to tumour variant DNA Database results")
-
 tvar_classifications <- read_csv(paste0(config::get("data_folderpath"),
                                         "01_initial/",
                                         "tvar_classifications.csv"),
                                  show_col_types = FALSE)
 
+stopifnot(anyDuplicated(tvar_classifications$tvar_seqv1_description) == 0)
+
+message("Adding ",
+        nrow(tvar_classifications),
+        " variant classifications to tumour variant DNA Database results")
 
 tvar_dnadb_classifications <- tvar_dnadb_extracted |> 
   mutate(tvar_seqv1_description = str_extract(string = genotype,
@@ -108,6 +125,8 @@ samples_with_tumour_variants <- tvar_dnadb_classifications |>
 stopifnot(anyNA(samples_with_tumour_variants$tvar_seqv1_description) == FALSE)
 
 # Add headline to tumour variant results ----------------------------------
+
+message("Adding headline results to tumour variant DNA Database results")
 
 no_path_var_strings <- unique(grep(pattern = "no\\spathogenic",
             x = tvar_dnadb_extracted$genotype,
