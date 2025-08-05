@@ -293,3 +293,26 @@ gi_tvar_histogram <- gi_tvar_joined_conclusive |>
 gi_tvar_histogram
 
 ```
+
+```{r}
+#| label: gi-tvar-percent
+#| echo: FALSE
+#| fig-cap: "GI score versus tumour BRCA variant percentage"
+
+gi_tvar_percent_plot <- gi_tvar_joined_conclusive |> 
+  filter(tvar_gene %in% c("BRCA1", "BRCA2")) |> 
+  ggplot(aes(x = tvar_seqv1_percent, y = score)) +
+  geom_point(shape = 21, aes(fill = tvar_headline_classification)) +
+  scale_fill_manual(values = variant_class_colours) +
+  xlim(0, 100) +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(fill = "",
+       x = "Tumour variant percent",
+       y = "SeqOne GI score")
+
+gi_tvar_percent_plot
+
+```
+
+
