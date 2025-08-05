@@ -121,7 +121,6 @@ tvar_dnadb_for_bind <- tvar_dnadb_cleaned |>
          tvar_reflex_test = NA, 
          tvar_quality_score = NA, 
          tvar_seqv1_genomic_coordinates = NA, 
-         tvar_seqv1_state = NA, 
          tvar_checker_comments = NA, 
          tvar_icnv1_classification = NA, 
          tvar_icnv1_description = NA, 
@@ -250,12 +249,14 @@ tvar_dnadb_igene_bound_genes <- tvar_dnadb_igene_bound |>
       !is.na(tvar_seqv1_classification) ~tvar_seqv1_classification,
       !is.na(tvar_icnv1_classification) ~tvar_icnv1_classification,
       TRUE ~NA
-    ))
+    ),
+    tvar_seqv1_percent = parse_number(tvar_seqv1_state))
 
 samples_with_t_variants <- tvar_dnadb_igene_bound_genes |> 
   filter(!is.na(tvar_seqv1_description))
 
 stopifnot(anyNA(samples_with_t_variants$tvar_gene) == FALSE)
+stopifnot(anyNA(samples_with_t_variants$tvar_seqv1_percent) == FALSE)
 
 # Filter tumour variant data to one result per patient --------------------
 
