@@ -32,10 +32,6 @@ I have developed a naming convention for this project to (hopefully) make the pr
 
 ## **Identifiers**
 
--   **labno:** the laboratory number or "DNA number" used on DNA Database.
-    Any labno is an 8-digit string of numbers.
-    The first two digits indicate the year the sample was received.
-
 -   **nhsno:** the patient's 10 digit NHS number.
 
 -   **rno:** the iGene referral (R) number.
@@ -47,6 +43,15 @@ I have developed a naming convention for this project to (hopefully) make the pr
 
 -   **dno:** the iGene derivative (D) number.
     This number identifies material that is *derived* from a sample, such as DNA which is extracted from FFPE shavings.
+
+-   **tno:** the iGene test (T) number.
+    This number identifies a single test instance.
+    One D number can have multiple T numbers.
+
+-   **labno:** the laboratory number or "DNA number" used on DNA Database.
+    Any labno is an 8-digit string of numbers.
+    The first two digits indicate the year the sample was received.
+    The laboratory number is the DNA Database equivalent of the iGene D number.
 
 -   **pathno:** the identifier of the FFPE pathology block from which DNA was extracted.
     Different pathology labs have different formats for pathno.
@@ -77,6 +82,8 @@ I have developed a naming convention for this project to (hopefully) make the pr
 ## **Acronyms**
 
 -   **orpp:** One Result Per Patient
+
+-   **orpr:** One Result Per Referral
 
 -   **orps:** One Result Per Sample
 
