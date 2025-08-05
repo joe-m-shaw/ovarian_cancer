@@ -37,7 +37,7 @@ message("Joining GI and germline variant data by NHS number")
 gi_csv_cleaned_orpp_for_join <- gi_csv_cleaned_orpp |> 
   rename(gi_labno = labno,
          gi_pathno = pathno) |> 
-  select(nhsno, gi_labno, gi_pathno, firstname, surname, lga, lpc, score,
+  select(nhsno, rno, gi_labno, gi_pathno, firstname, surname, lga, lpc, score,
          status, gi_confidence)
 
 glvar_dnadb_igene_bound_orpp_for_join <- glvar_dnadb_igene_bound_orpp |> 
@@ -68,8 +68,17 @@ gi_tvar_joined_by_nhsno <- gi_csv_cleaned_orpp_for_join |>
              by = "nhsno",
              relationship = "one-to-one") 
 
+gi_tvar_joined_by_rno <- gi_csv_cleaned_orpp_for_join |> 
+  inner_join(tvar_dnadb_igene_bound_orpp_for_join,
+             by = "rno",
+             relationship = "one-to-one") 
 
-
+gi_tvar_joined_by_pathno <- gi_csv_cleaned_orpp_for_join |> 
+  filter(!is.na(gi_pathno)) |> 
+  inner_join(tvar_dnadb_igene_bound_orpp_for_join |> 
+               filter(!is.na(tvar_pathno)),
+             join_by("gi_pathno" == "tvar_pathno"),
+             relationship = "one-to-one") 
 
 # Join tvar and glvar data ------------------------------------------------
 
