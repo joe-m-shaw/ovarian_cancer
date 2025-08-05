@@ -24,13 +24,16 @@ stopifnot(anyNA(gi_csv_collated$status) == 0)
 
 # Get sample identifiers --------------------------------------------------
 
-message("Adding sample identifiers to GI csv data")
-
 gi_labnos <- unique(gi_csv_collated$labno)
+
+message("Adding identifiers for ",
+        length(gi_labnos),
+        " samples to GI csv data")
 
 gi_sample_info <- sample_tbl |> 
   filter(labno %in% gi_labnos) |> 
-  select(labno, firstname, surname, nhsno) |> 
+  select(labno, i_gene_r_no, i_gene_s_no, 
+         firstname, surname, nhsno, pathno) |> 
   collect()
 
 stopifnot(anyNA.data.frame(gi_sample_info |> 
@@ -47,7 +50,10 @@ gi_csv_collated_patient_info <- gi_csv_collated |>
             # One lab number can have multiple GI results, but should only
             # have one NHS number
             relationship = "many-to-one") |> 
-  relocate(labno, surname, firstname, nhsno)
+  relocate(labno, i_gene_r_no, i_gene_s_no,
+           surname, firstname, nhsno, pathno) |> 
+  rename(rno = i_gene_r_no,
+         sno = i_gene_s_no)
 
 stopifnot(anyNA(gi_csv_collated_patient_info$firstname) == FALSE)
 
