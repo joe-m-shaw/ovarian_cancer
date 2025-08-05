@@ -1,3 +1,5 @@
+# Extract glvar and tvar data from DNA Database
+
 library(tidyverse)
 
 source(here::here("scripts/connect_to_sql_server.R"))
@@ -17,7 +19,9 @@ gi_nhsnos <- gi_csv_cleaned$nhsno
 
 # Identify all lab numbers from patients ----------------------------------
 
-message("Finding all DNA Database lab numbers for patients with GI results")
+message(paste0("Finding all DNA Database lab numbers for ",
+               length(gi_nhsnos),
+               " patients with GI results, based on NHS number"))
 
 labno_df <- sample_tbl |> 
   filter(nhsno %in% gi_nhsnos) |> 
@@ -25,12 +29,15 @@ labno_df <- sample_tbl |>
   collect()
 
 stopifnot(length(setdiff(unique(labno_df$nhsno), gi_nhsnos)) == 0)
+stopifnot(anyNA.data.frame(labno_df) == FALSE)
 
 labno_query <- unique(labno_df$labno)
 
 # Extract all results for lab numbers -------------------------------------
 
-message("Extracting DNA Database results for all lab numbers")
+message(paste0("Extracting DNA Database results for ",
+               length(labno_query),
+               " lab numbers"))
 
 dnadb_results <- results_tbl |> 
   filter(labno %in% labno_query) |> 
@@ -42,40 +49,56 @@ stopifnot(nrow(dnadb_results) != 0)
 
 # Extract germline variant results ----------------------------------------
 
-message("Finding germline variant DNA Database results")
-
-icp_test_strings <- unique(grep(pattern = "hs2(\\s|)icp", 
+icp_grep_strings <- unique(grep(pattern = "hs2(\\s|)icp", 
             x = dnadb_results$test, 
             ignore.case = TRUE, 
             value = TRUE))
 
+icp_test_strings <- c(icp_grep_strings,
+                      "NGS SSXT ICP",
+                      "ICP PANEL",
+                      "SSXT ICP NGS",
+                      "ICP SSXT NGS",
+                      "Panel re-analysis of 24043064 from WS144546",
+                      "NGS SSXT ICPv4",
+                      "SSXTHS2 ICPv4",
+                      "ICPv4 NGS SSXT HS2")
+
+message("Finding germline variant DNA Database results. There are ",
+        length(icp_test_strings),
+        " different test descriptions: ",
+        paste(icp_test_strings, collapse = ", "))
+
 glvar_dnadb_results <- dnadb_results |> 
-  filter(test %in% c(icp_test_strings,
-                     "NGS SSXT ICP",
-                     "ICP PANEL",
-                     "SSXT ICP NGS",
-                     "ICP SSXT NGS",
-                     "Panel re-analysis of 24043064 from WS144546",
-                     "NGS SSXT ICPv4",
-                     "SSXTHS2 ICPv4",
-                     "ICPv4 NGS SSXT HS2")) |> 
+  filter(test %in% icp_test_strings) |> 
   left_join(labno_df, by = "labno") |> 
   relocate(nhsno)
 
+message(paste0(nrow(glvar_dnadb_results),
+               " results found"))
+
 # Extract tumour variant results ------------------------------------------
 
-message("Finding tumour variant DNA Database results")
-
-pansolid_test_strings <- unique(grep(pattern = "seq\\span", 
+pansolid_grep_strings <- unique(grep(pattern = "seq\\span", 
                                      x = dnadb_results$test, 
                                      ignore.case = TRUE, 
                                      value = TRUE))
 
+pansolid_test_strings <- c(pansolid_grep_strings,
+                           "NGS Pansolid", "NGS PanSolid QIAseq")
+
+message("Finding tumour variant DNA Database results. There are ",
+        length(pansolid_test_strings),
+        " different test descriptions: ",
+        paste(pansolid_test_strings, collapse = ", "))
+
 tvar_dnadb_results <- dnadb_results |> 
-  filter(test %in% c(pansolid_test_strings,
-                     "NGS Pansolid", "NGS PanSolid QIAseq")) |> 
+  filter(test %in% pansolid_test_strings) |> 
   left_join(labno_df, by = "labno") |> 
   relocate(nhsno)
+
+message(paste0(nrow(tvar_dnadb_results),
+               " results found"))
 
 # Check date range of data ------------------------------------------------
 
