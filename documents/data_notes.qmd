@@ -12,9 +12,22 @@ This document is a summation of the various issues I've encountered working with
 -   I am interested in the results of 3 different tests: genomic instability (GI) testing, tumour variant testing and germline variant testing.
     Since December 2023, the results for these different tests have been saved across two different databases: DNA Database and iGene.
 
--   Results for these tests stopped being entered onto DNA Database and began being entered onto iGene at different times.
+-   Results for these tests stopped being entered onto DNA Database and began being entered onto iGene at different times: tumour test results were first entered onto DNA Database and switched to iGene in April 2024, whilst germline results switched in August 2024.
 
 -   Samples may also have been tested multiple times on multiple different tests with results entered on different databases.
+
+-   Patients may have different genetic tests performed on different FFPE pathology blocks from the same tumour, or different tumours.
+    Even within the same tumour there can be intra-tumoural heterogeneity, so the results from different tumour blocks may not be comparable.
+
+-   Pathology block identifiers are not standardised, as each pathology lab uses its own system.
+    Examples: "M24-14371 B2", "H.24.10561 A12", "S23/30773 2".
+
+-   Pathology block identifiers are manually transcribed from the referral form (where they may be handwritten) onto DNA Database, which can lead to discrepancies.
+    Example: "H24/3991 A4" and "H24-3991 A4".
+
+-   In other laboratories, GI testing and tumour variant testing are performed within the same test (such as the Myriad MyChoice test).
+    However, at the North West GLH, GI testing is performed on a different lab workflow and pipeline to tumour variant testing.
+    Sometimes GI testing and tumour variant testing will be performed on different DNA samples for the same patient.
 
 -   DNA Database and iGene have different names for the same variable, such as the R number ("i_gene_r_no" on DNA Database and "referral" on iGene).
 
