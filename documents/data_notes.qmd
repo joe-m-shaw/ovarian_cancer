@@ -25,6 +25,8 @@ This document is a summation of the various issues I've encountered working with
 -   Pathology block identifiers are manually transcribed from the referral form (where they may be handwritten) onto DNA Database, which can lead to discrepancies.
     Example: "H24/3991 A4" and "H24-3991 A4".
 
+-   A patient may have samples sent from different pathology blocks from different pathology departments at different times (example: R25-11Z2 and R25-0C43).
+
 -   In other laboratories, GI testing and tumour variant testing are performed within the same test (such as the Myriad MyChoice test).
     However, at the North West GLH, GI testing is performed on a different lab workflow and pipeline to tumour variant testing.
     Sometimes GI testing and tumour variant testing will be performed on different DNA samples for the same patient.
