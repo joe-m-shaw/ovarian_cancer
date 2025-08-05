@@ -34,33 +34,41 @@ tvar_dnadb_cleaned <- read_csv(file =
 
 # Prepare iGene data for bind ---------------------------------------------
 
+patient_id_df <- sample_tbl |> 
+  select(i_gene_r_no, labno, pathno) |> 
+  collect() |> 
+  rename(rno = i_gene_r_no) |> 
+  filter(!duplicated(rno))
+
 glvar_igene_for_bind <- glvar_igene_extracted |>
   rename(rno = referral_number) |> 
   mutate(data_source = "igene",
-         genotype = "",
-         labno = "") |> 
-  relocate(nhsno, labno, rno, data_source, .before = test_order_date)
+         genotype = "") |> 
+  # Add pathology number
+  left_join(patient_id_df,
+            by = "rno",
+            relationship = "many-to-one") |> 
+  relocate(nhsno, labno, rno, pathno, data_source, .before = test_order_date)
 
 stopifnot(nrow(glvar_igene_for_bind) == nrow(glvar_igene_extracted))
 
 tvar_igene_for_bind <- tvar_igene_extracted |> 
   rename(rno = referral_number) |> 
   mutate(data_source = "igene",
-         genotype = "",
-         labno = "") |> 
-  relocate(nhsno, labno, rno, data_source, .before = test_order_date)
+         genotype = "") |> 
+  # Add pathology number
+  left_join(patient_id_df,
+            by = "rno",
+            relationship = "many-to-one") |> 
+  relocate(nhsno, labno, rno, pathno, data_source, .before = test_order_date)
 
 stopifnot(nrow(tvar_igene_for_bind) == nrow(tvar_igene_extracted))
 
 # Prepare DNA Database germline data for bind -----------------------------
 
-patient_id_df <- sample_tbl |> 
-  select(i_gene_r_no, labno) |> 
-  collect() |> 
-  rename(rno = i_gene_r_no)
-
 glvar_dnadb_for_bind <- glvar_dnadb_cleaned |> 
-  left_join(patient_id_df, by = "labno",
+  left_join(patient_id_df, 
+            by = "labno",
             relationship = "many-to-one") |> 
   mutate(data_source = "dnadb",
          # Add empty columns for bind
@@ -83,7 +91,7 @@ glvar_dnadb_for_bind <- glvar_dnadb_cleaned |>
          ) |> 
   select(
     # Identifiers
-    nhsno, labno, rno, 
+    nhsno, labno, rno, pathno,
     # Test information
     data_source, test_order_date, test_identifier, 
     # Result information
@@ -101,7 +109,8 @@ stopifnot(nrow(glvar_dnadb_for_bind) == nrow(glvar_dnadb_cleaned))
 # Prepare DNA Database tumour data for bind -------------------------------
 
 tvar_dnadb_for_bind <- tvar_dnadb_cleaned |> 
-  left_join(patient_id_df, by = "labno",
+  left_join(patient_id_df, 
+            by = "labno",
             relationship = "many-to-one") |> 
   mutate(data_source = "dnadb",
          test_order_date = NA, 
@@ -129,7 +138,8 @@ tvar_dnadb_for_bind <- tvar_dnadb_cleaned |>
          tvar_sv1_state = NA,
          tvar_sv1_description = NA,       
          tvar_sv1_genomic_coordinates = NA) |> 
-  select(nhsno, labno, rno, data_source, test_order_date, 
+  select(nhsno, labno, rno, pathno,
+         data_source, test_order_date, 
          test_identifier, tvar_panel_coverage, tvar_failed_hotspots, 
          tvar_quality_score, tvar_headline_result, tvar_reflex_test, 
          tvar_analyst_comments, tvar_checker_comments, tvar_seqv2_state, 
