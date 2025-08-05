@@ -2,9 +2,9 @@
 
 message("Running kintsuGI pipeline")
 
-# source(here::here("scripts/gi_csv_collate.R"))
+source(here::here("scripts/gi_csv_identify.R"))
 
-# rm(list=ls())
+rm(list=ls())
 
 source(here::here("scripts/gi_csv_annotate.R"))
 
