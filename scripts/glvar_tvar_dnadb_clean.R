@@ -116,7 +116,11 @@ message("Adding ",
 tvar_dnadb_classifications <- tvar_dnadb_extracted |> 
   mutate(tvar_seqv1_description = str_extract(string = genotype,
                                              pattern = "(.*)\\s\\d{1,3}%",
-                                             group = 1)) |> 
+                                             group = 1),
+         # Add variant percentage
+         tvar_seqv1_state = str_extract(string = genotype,
+                                        pattern = ".*\\s(\\d{1,3})%",
+                                        group = 1)) |> 
   left_join(tvar_classifications, by = "tvar_seqv1_description")
 
 samples_with_tumour_variants <- tvar_dnadb_classifications |> 
