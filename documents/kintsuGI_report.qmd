@@ -46,7 +46,7 @@ glvar_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
 
 gi_tvar_joined <- read_csv(paste0(config::get("data_folderpath"),
                                    "03_joined/",
-                                   "gi_tvar_joined.csv"),
+                                   "gi_tvar_joined_by_labno.csv"),
                            col_types = list(
                               tvar_headline_classification = col_factor(
                                 levels = c("Pathogenic",
@@ -106,8 +106,6 @@ tbl_gi_glvar_tvar_all <- glvar_all_results |>
 knitr::kable(tbl_gi_glvar_tvar_all)
 
 ```
-
-
 
 ```{r}
 #| label: conclusive-results
@@ -227,7 +225,7 @@ knitr::kable(glvar_neg_gi |>
 ```
 
 ```{r}
-#| label: tbl-tvar-neg-hi
+#| label: tbl-tvar-neg-gi
 #| echo: FALSE
 #| tbl-cap: "GI negative samples with tumour BRCA variants"
 
@@ -235,7 +233,7 @@ tvar_neg_gi <- gi_tvar_joined_conclusive |>
   filter(tvar_headline_result == "Reportable variant(s) detected") |>
   filter(tvar_gene %in% c("BRCA1","BRCA2")) |> 
   filter(score < 0.5) |> 
-  select(nhsno, surname, score, tvar_seqv1_description) |> 
+  select(surname, score, tvar_seqv1_description) |> 
                mutate(score = round(score, 2))
 
 knitr::kable(tvar_neg_gi)
