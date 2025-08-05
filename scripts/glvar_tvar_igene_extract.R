@@ -1,3 +1,5 @@
+# Extract tumour and germline results from iGene
+
 library(tidyverse, quietly  = TRUE)
 library(janitor, quietly  = TRUE)
 
