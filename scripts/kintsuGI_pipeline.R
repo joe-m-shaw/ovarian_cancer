@@ -1,37 +1,31 @@
 # kintsuGI pipeline
 
-message("Running kintsuGI pipeline")
-
-source(here::here("scripts/gi_csv_identify.R"))
+quarto::quarto_render(here::here("scripts/gi_csv_identify.qmd"))
 
 rm(list=ls())
 
-source(here::here("scripts/gi_csv_annotate.R"))
-
-rm(list=ls())
-      
-source(here::here("scripts/glvar_tvar_dnadb_extract.R"))
+quarto::quarto_render(here::here("scripts/gi_csv_annotate.qmd"))
 
 rm(list=ls())
 
-source(here::here("scripts/glvar_tvar_igene_extract.R"))
+quarto::quarto_render(here::here("scripts/glvar_tvar_dnadb_extract.qmd"))
+    
+rm(list=ls())
+
+quarto::quarto_render(here::here("scripts/glvar_tvar_igene_extract.qmd"))
 
 rm(list=ls())
 
-source(here::here("scripts/glvar_tvar_dnadb_clean.R"))
+quarto::quarto_render(here::here("scripts/glvar_tvar_dnadb_clean.qmd"))
 
 rm(list=ls())
 
-source(here::here("scripts/glvar_tvar_dnadb_igene_bind.R"))
+quarto::quarto_render(here::here("scripts/glvar_tvar_dnadb_igene_bind.qmd"))
 
 rm(list=ls())
 
-source(here::here("scripts/gi_glvar_tvar_join.R"))
+quarto::quarto_render(here::here("scripts/gi_glvar_tvar_join.qmd"))
 
 rm(list=ls())
-
-message("Data processing complete. Rendering kintsuGI_report.qmd")
 
 quarto::quarto_render("documents/kintsuGI_report.qmd")
-
-message("kintsuGI pipeline finished")
