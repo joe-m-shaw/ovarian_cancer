@@ -154,7 +154,7 @@ if(nrow(gi_new_filepath_df) > 0) {
   file.copy(from = gi_filepaths_to_copy,
             to = gi_csv_new_folder)
   
-  source(here::here("scripts/gi_csv_collate.R"))
+  quarto::quarto_render(here::here("scripts/gi_csv_collate.qmd"))
 } 
 
 ```
