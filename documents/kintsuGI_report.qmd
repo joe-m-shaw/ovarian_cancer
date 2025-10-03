@@ -8,6 +8,8 @@ fig-cap-location: top
 editor: visual
 ---
 
+This is the output of the kintsuGI pipeline for auditing ovarian cancer data at the North West Genomic Laboratory Hub.
+
 ```{r}
 #| label: packages
 #| include: FALSE
@@ -94,7 +96,7 @@ tbl_gi_orps <- gi_csv_cleaned_orps |>
 tbl_gi_orpp <- gi_csv_cleaned_orpp |> 
   group_by(status) |> 
   summarise(n = n()) |> 
-  mutate("Percentage patients (%)" = (round((n / sum(n))*100, 1))) |> 
+  mutate("Percent (%)" = (round((n / sum(n))*100, 1))) |> 
   rename("Patients" = n)
 
 tbl_gi_results <- tbl_gi_orps |> 
@@ -103,6 +105,10 @@ tbl_gi_results <- tbl_gi_orps |>
   adorn_totals()
 
 knitr::kable(tbl_gi_results)
+
+knitr::kable(tbl_gi_orpp |> 
+               rename("GI status" = status) |> 
+               adorn_totals())
 
 ```
 
@@ -383,8 +389,8 @@ gi_data_sum <- gi_csv_cleaned_orpp |>
 seqone_timeplot <- ggplot(gi_data_sum, aes(x = month, y = cum_total)) +
   scale_x_datetime(date_breaks = "1 month",
                    date_labels = "%b-%Y") +
-  scale_y_continuous(limits = c(0, 600), 
-                     breaks = seq(0, 600, by = 100)) +
+  scale_y_continuous(limits = c(0, max(gi_data_sum$cum_total)+50), 
+                     breaks = seq(0, max(gi_data_sum$cum_total)+50, by = 100)) +
   geom_line() +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, 
@@ -393,5 +399,36 @@ seqone_timeplot <- ggplot(gi_data_sum, aes(x = month, y = cum_total)) +
   labs(x = "", y = "Cumulative patients") 
 
 seqone_timeplot
+
+```
+
+```{r}
+#| label: gi-score-histogram
+#| echo: FALSE
+
+safe_blue <- "#88CCEE"
+safe_red <- "#CC6677"
+safe_grey <- "#888888"
+
+pooled_sd <- 0.04
+
+gi_csv_cleaned_orpp |> 
+  filter(status != "Non-conclusive") |> 
+  ggplot(aes(x = score, y = )) +
+  geom_histogram(binwidth = 0.01, aes(fill = status),
+                 colour = "black") +
+  scale_fill_manual(values = c(safe_blue, safe_red)) +
+  theme_bw() +
+  geom_vline(xintercept = 0.5, linetype = "dashed") +
+  annotate(geom = "rect", xmin = 0.5-(2*pooled_sd), 
+           xmax = 0.5+(2*pooled_sd),
+           ymin = 0, ymax = 45, fill = "grey",
+           alpha = 0.4) +
+  coord_cartesian(ylim = c(0, 40)) +
+  theme(legend.position = "bottom") +
+  labs(x = "SeqOne GI score",
+       y = "Patients",
+       title = "Clinical service GI scores",
+       fill = "GI status")
 
 ```
