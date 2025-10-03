@@ -1,4 +1,4 @@
-# kintsuGI: golden joining cancer results <img src="kintsuGI_logo.png" align="right" height="200"/>
+# Golden joining cancer results <img src="kintsuGI_logo.png" align="right" height="200"/>
 
 ## Purpose
 
